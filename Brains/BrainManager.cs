@@ -12,7 +12,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         public const int START_LOGIC_ID = 9000;
 
         private static BrainManager _instance;
-        public static BrainManager Instance
+        internal static BrainManager Instance
         {
             get 
             { 
@@ -34,23 +34,6 @@ namespace DrakiaXYZ.BigBrain.Brains
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }
 
-        public int AddCustomLayer(Type customLayerType, List<string> customLayerBrains, int customLayerPriority)
-        {
-            if (!typeof(CustomLayer).IsAssignableFrom(customLayerType))
-            {
-                throw new ArgumentException($"Custom layer type {customLayerType.FullName} must inherit CustomLayer");
-            }
-
-            if (customLayerBrains.Count == 0)
-            {
-                throw new ArgumentException($"Custom layer type {customLayerType.FullName} must specify at least 1 brain to be added to");
-            }
-
-            int customLayerId = _currentLayerId++;
-            CustomLayers.Add(customLayerId, new LayerInfo(customLayerType, customLayerBrains, customLayerPriority, customLayerId));
-            return customLayerId;
-        }
-
         internal class LayerInfo
         {
             public Type customLayerType;
@@ -65,6 +48,23 @@ namespace DrakiaXYZ.BigBrain.Brains
                 customLayerPriority = layerPriority;
                 customLayerId = layerId;
             }
+        }
+
+        public static int AddCustomLayer(Type customLayerType, List<string> customLayerBrains, int customLayerPriority)
+        {
+            if (!typeof(CustomLayer).IsAssignableFrom(customLayerType))
+            {
+                throw new ArgumentException($"Custom layer type {customLayerType.FullName} must inherit CustomLayer");
+            }
+
+            if (customLayerBrains.Count == 0)
+            {
+                throw new ArgumentException($"Custom layer type {customLayerType.FullName} must specify at least 1 brain to be added to");
+            }
+
+            int customLayerId = _currentLayerId++;
+            Instance.CustomLayers.Add(customLayerId, new LayerInfo(customLayerType, customLayerBrains, customLayerPriority, customLayerId));
+            return customLayerId;
         }
     }
 }

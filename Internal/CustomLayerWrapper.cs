@@ -62,13 +62,6 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         public override GStruct7 ShallEndCurrentDecision(GStruct8<BotLogicDecision> curDecision)
         {
-            // If this isn't a custom action, we want to end it (So we can take control)
-            if ((int)curDecision.Action < BrainManager.START_LOGIC_ID)
-            {
-                customLayer.CurrentAction = null;
-                return gstruct7_1;
-            }
-
             if (customLayer.IsCurrentActionEnding())
             {
                 StopCurrentLogic();

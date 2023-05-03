@@ -7,6 +7,7 @@ namespace DrakiaXYZ.BigBrain.Brains
     {
         public BotOwner BotOwner { get; private set; }
         public int Priority { get; private set; }
+        public Action CurrentAction { get; set; } = null;
 
         public CustomLayer(BotOwner botOwner, int priority) 
         {

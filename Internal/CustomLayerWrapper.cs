@@ -38,6 +38,8 @@ namespace DrakiaXYZ.BigBrain.Internal
                 throw new ArgumentException($"Custom logic type {action.Type.FullName} must inherit CustomLogic");
             }
 
+            customLayer.CurrentAction = action;
+
             if (!BrainManager.Instance.CustomLogics.TryGetValue(action.Type, out int logicId))
             {
                 logicId = _currentLogicId++;
@@ -60,10 +62,11 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         public override GStruct7 ShallEndCurrentDecision(GStruct8<BotLogicDecision> curDecision)
         {
-            // If this isn't a custom action, delegate to the base class
+            // If this isn't a custom action, we want to end it (So we can take control)
             if ((int)curDecision.Action < BrainManager.START_LOGIC_ID)
             {
-                return base.ShallEndCurrentDecision(curDecision);
+                customLayer.CurrentAction = null;
+                return gstruct7_1;
             }
 
             if (customLayer.IsCurrentActionEnding())
@@ -89,6 +92,8 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         private void StopCurrentLogic()
         {
+            customLayer.CurrentAction = null;
+
             BotLogicDecision logicId = botOwner_0.Brain.Agent.LastResult().Action;
             CustomLogicWrapper logicInstance = GetLogicInstance(logicId);
             if (logicInstance != null)

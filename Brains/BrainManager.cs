@@ -30,6 +30,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal Dictionary<int, LayerInfo> CustomLayers = new Dictionary<int, LayerInfo>();
         internal Dictionary<Type, int> CustomLogics = new Dictionary<Type, int>();
         internal List<Type> CustomLogicList = new List<Type>();
+        internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
 
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }
@@ -50,6 +51,18 @@ namespace DrakiaXYZ.BigBrain.Brains
             }
         }
 
+        internal class ExcludeLayerInfo
+        {
+            public List<string> excludeLayerBrains;
+            public string excludeLayerName;
+
+            public ExcludeLayerInfo(string layerName, List<string> brains)
+            {
+                excludeLayerBrains = brains;
+                excludeLayerName = layerName;
+            }
+        }
+
         public static int AddCustomLayer(Type customLayerType, List<string> customLayerBrains, int customLayerPriority)
         {
             if (!typeof(CustomLayer).IsAssignableFrom(customLayerType))
@@ -65,6 +78,11 @@ namespace DrakiaXYZ.BigBrain.Brains
             int customLayerId = _currentLayerId++;
             Instance.CustomLayers.Add(customLayerId, new LayerInfo(customLayerType, customLayerBrains, customLayerPriority, customLayerId));
             return customLayerId;
+        }
+
+        public static void RemoveLayer(string layerName, List<string> brainNames)
+        {
+            Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
         }
     }
 }

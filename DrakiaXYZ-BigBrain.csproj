@@ -87,7 +87,9 @@
     <Compile Include="Internal\CustomLayerWrapper.cs" />
     <Compile Include="Internal\CustomLogicWrapper.cs" />
     <Compile Include="Patches\BotAgentUpdatePatch.cs" />
+    <Compile Include="Patches\BotBaseBrainActivateLayerPatch.cs" />
     <Compile Include="Patches\BotBaseBrainActivatePatch.cs" />
+    <Compile Include="Patches\BotBaseBrainAddLayerPatch.cs" />
     <Compile Include="Patches\BotBaseBrainUpdatePatch.cs" />
     <Compile Include="Patches\BotBrainCreateLogicNodePatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

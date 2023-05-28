@@ -11,11 +11,14 @@ using System.Threading.Tasks;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
+    /**
+     * Patch the base brain Update method so we can trigger Stop/Start methods on custom layers
+     **/
     internal class BotBaseBrainUpdatePatch : ModulePatch
     {
         private static MethodInfo _activeLayerGetter;
         private static MethodInfo _activeLayerSetter;
-        private static FieldInfo _layerListField;
+        private static FieldInfo _activeLayerListField;
         private static FieldInfo _onLayerChangedToField;
 
         protected override MethodBase GetTargetMethod()
@@ -25,7 +28,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 
             _activeLayerGetter = AccessTools.PropertyGetter(botBaseBrainType, "GClass28_0");
             _activeLayerSetter = AccessTools.PropertySetter(botBaseBrainType, "GClass28_0");
-            _layerListField = AccessTools.Field(botBaseBrainType, "list_0");
+            _activeLayerListField = AccessTools.Field(botBaseBrainType, "list_0");
             _onLayerChangedToField = AccessTools.Field(botBaseBrainType, "action_0");
 
             return AccessTools.Method(botBaseBrainType, "Update");
@@ -35,10 +38,10 @@ namespace DrakiaXYZ.BigBrain.Patches
         public static bool PatchPrefix(object __instance, GStruct8<BotLogicDecision> prevResult, ref GStruct8<BotLogicDecision>? __result)
         {
             // Get values we'll use later
-            List<GClass28<BotLogicDecision>> layerList = _layerListField.GetValue(__instance) as List<GClass28<BotLogicDecision>>;
+            List<GClass28<BotLogicDecision>> activeLayerList = _activeLayerListField.GetValue(__instance) as List<GClass28<BotLogicDecision>>;
             GClass28<BotLogicDecision> activeLayer = _activeLayerGetter.Invoke(__instance, null) as GClass28<BotLogicDecision>;
 
-            foreach (GClass28<BotLogicDecision> layer in layerList)
+            foreach (GClass28<BotLogicDecision> layer in activeLayerList)
             {
                 if (layer.ShallUseNow())
                 {

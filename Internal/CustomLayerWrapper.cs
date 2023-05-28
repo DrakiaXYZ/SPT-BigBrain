@@ -37,6 +37,8 @@ namespace DrakiaXYZ.BigBrain.Internal
             {
                 throw new ArgumentException($"Custom logic type {action.Type.FullName} must inherit CustomLogic");
             }
+            //Logger.LogDebug($"NextAction: {action.Type.FullName}");
+            //Logger.LogDebug($"Reason: {action.Reason}");
 
             customLayer.CurrentAction = action;
 
@@ -66,6 +68,12 @@ namespace DrakiaXYZ.BigBrain.Internal
             if ((int)curDecision.Action < BrainManager.START_LOGIC_ID)
             {
                 customLayer.CurrentAction = null;
+                return gstruct7_0;
+            }
+
+            // If the custom layer has a null action, we've switched between custom layers, so return that we're ending
+            if (customLayer.CurrentAction == null)
+            {
                 return gstruct7_0;
             }
 

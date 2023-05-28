@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
+    /**
+     * Patch the bot agent update method so we can trigger a Start() method on custom logic actions
+     **/
     internal class BotAgentUpdatePatch : ModulePatch
     {
         private static FieldInfo _brainFieldInfo;

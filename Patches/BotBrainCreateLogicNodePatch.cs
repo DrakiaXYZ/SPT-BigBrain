@@ -8,6 +8,9 @@ using System.Reflection;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
+    /**
+     * Patch the bot brain class lazy loader class so we can lazily load our custom logics
+     **/
     internal class BotBrainCreateLogicNodePatch : ModulePatch
     {
 

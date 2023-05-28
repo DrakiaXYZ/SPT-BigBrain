@@ -12,7 +12,7 @@ namespace DrakiaXYZ.BigBrain
         {
             Logger.LogInfo("Loading: DrakiaXYZ-BigBrain");
 
-            if (!TarkovVersion.CheckEftVersion(Logger, Info))
+            if (!TarkovVersion.CheckEftVersion(Logger, Info, Config))
             {
                 throw new Exception($"Invalid EFT Version");
             }

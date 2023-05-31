@@ -86,6 +86,7 @@
     <Compile Include="Brains\CustomLogic.cs" />
     <Compile Include="Internal\CustomLayerWrapper.cs" />
     <Compile Include="Internal\CustomLogicWrapper.cs" />
+    <None Include="LICENSE" />
     <Compile Include="Patches\BotAgentUpdatePatch.cs" />
     <Compile Include="Patches\BotBaseBrainActivateLayerPatch.cs" />
     <Compile Include="Patches\BotBaseBrainActivatePatch.cs" />

@@ -35,46 +35,59 @@ namespace DrakiaXYZ.BigBrain.Patches
         [PatchPrefix]
         public static bool PatchPrefix(object __instance)
         {
-            // Get values we'll use later
-            BotBaseBrainClass brain = _brainFieldInfo.GetValue(__instance) as BotBaseBrainClass;
-            Dictionary<BotLogicDecision, GClass103> logicInstanceDict = _logicInstanceDictField.GetValue(__instance) as Dictionary<BotLogicDecision, GClass103>;
+#if DEBUG
+            try {
+#endif
 
-            // Update the brain, this is instead of method_10 in the original code
-            brain.ManualUpdate();
+                // Get values we'll use later
+                BotBaseBrainClass brain = _brainFieldInfo.GetValue(__instance) as BotBaseBrainClass;
+                Dictionary<BotLogicDecision, GClass103> logicInstanceDict = _logicInstanceDictField.GetValue(__instance) as Dictionary<BotLogicDecision, GClass103>;
 
-            // Call the brain update
-            GStruct8<BotLogicDecision> lastResult = (GStruct8<BotLogicDecision>)_lastResultField.GetValue(__instance);
-            GStruct8<BotLogicDecision>? result = brain.Update(lastResult);
-            if (result != null)
-            {
-                // If an instance of our action doesn't exist in our dict, add it
-                int action = (int)result.Value.Action;
-                if (!logicInstanceDict.TryGetValue((BotLogicDecision)action, out GClass103 logicInstance))
+                // Update the brain, this is instead of method_10 in the original code
+                brain.ManualUpdate();
+
+                // Call the brain update
+                GStruct8<BotLogicDecision> lastResult = (GStruct8<BotLogicDecision>)_lastResultField.GetValue(__instance);
+                GStruct8<BotLogicDecision>? result = brain.Update(lastResult);
+                if (result != null)
                 {
-                    Func<BotLogicDecision, GClass103> lazyGetter = _lazyGetterField.GetValue(__instance) as Func<BotLogicDecision, GClass103>;
-                    logicInstance = lazyGetter((BotLogicDecision)action);
+                    // If an instance of our action doesn't exist in our dict, add it
+                    int action = (int)result.Value.Action;
+                    if (!logicInstanceDict.TryGetValue((BotLogicDecision)action, out GClass103 logicInstance))
+                    {
+                        Func<BotLogicDecision, GClass103> lazyGetter = _lazyGetterField.GetValue(__instance) as Func<BotLogicDecision, GClass103>;
+                        logicInstance = lazyGetter((BotLogicDecision)action);
+
+                        if (logicInstance != null)
+                        {
+                            logicInstanceDict.Add((BotLogicDecision)action, logicInstance);
+                        }
+                    }
 
                     if (logicInstance != null)
                     {
-                        logicInstanceDict.Add((BotLogicDecision)action, logicInstance);
-                    }
-                }
+                        // If we're switching to a new action, call Start() on the new logic
+                        if (lastResult.Action != result.Value.Action && logicInstance is CustomLogicWrapper customLogic)
+                        {
+                            customLogic.Start();
+                        }
 
-                if (logicInstance != null)
-                {
-                    // If we're switching to a new action, call Start() on the new logic
-                    if (lastResult.Action != result.Value.Action && logicInstance is CustomLogicWrapper customLogic)
-                    {
-                        customLogic.Start();
+                        logicInstance.Update();
                     }
 
-                    logicInstance.Update();
+                    _lastResultField.SetValue(__instance, result);
                 }
 
-                _lastResultField.SetValue(__instance, result);
+                return false;
+
+#if DEBUG
             }
-
-            return false;
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                throw ex;
+            }
+#endif
         }
     }
 }

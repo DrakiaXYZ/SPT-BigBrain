@@ -37,46 +37,60 @@ namespace DrakiaXYZ.BigBrain.Patches
         [PatchPrefix]
         public static bool PatchPrefix(object __instance, GStruct8<BotLogicDecision> prevResult, ref GStruct8<BotLogicDecision>? __result)
         {
-            // Get values we'll use later
-            List<GClass28<BotLogicDecision>> activeLayerList = _activeLayerListField.GetValue(__instance) as List<GClass28<BotLogicDecision>>;
-            GClass28<BotLogicDecision> activeLayer = _activeLayerGetter.Invoke(__instance, null) as GClass28<BotLogicDecision>;
-
-            foreach (GClass28<BotLogicDecision> layer in activeLayerList)
+#if DEBUG
+            try
             {
-                if (layer.ShallUseNow())
+#endif
+
+                // Get values we'll use later
+                List<GClass28<BotLogicDecision>> activeLayerList = _activeLayerListField.GetValue(__instance) as List<GClass28<BotLogicDecision>>;
+                GClass28<BotLogicDecision> activeLayer = _activeLayerGetter.Invoke(__instance, null) as GClass28<BotLogicDecision>;
+
+                foreach (GClass28<BotLogicDecision> layer in activeLayerList)
                 {
-                    if (layer != activeLayer)
+                    if (layer.ShallUseNow())
                     {
-                        // Allow telling custom layers they're stopping
-                        if (activeLayer is CustomLayerWrapper customActiveLayer)
+                        if (layer != activeLayer)
                         {
-                            customActiveLayer.Stop();
+                            // Allow telling custom layers they're stopping
+                            if (activeLayer is CustomLayerWrapper customActiveLayer)
+                            {
+                                customActiveLayer.Stop();
+                            }
+
+                            activeLayer = layer;
+                            _activeLayerSetter.Invoke(__instance, new object[] { layer });
+                            Action<GClass28<BotLogicDecision>> action = _onLayerChangedToField.GetValue(__instance) as Action<GClass28<BotLogicDecision>>;
+                            if (action != null)
+                            {
+                                action(activeLayer);
+                            }
+
+                            // Allow telling custom layers they're starting
+                            if (activeLayer is CustomLayerWrapper customNewLayer)
+                            {
+                                customNewLayer.Start();
+                            }
                         }
 
-                        activeLayer = layer;
-                        _activeLayerSetter.Invoke(__instance, new object[] { layer });
-                        Action<GClass28<BotLogicDecision>> action = _onLayerChangedToField.GetValue(__instance) as Action<GClass28<BotLogicDecision>>;
-                        if (action != null)
-                        {
-                            action(activeLayer);
-                        }
-
-                        // Allow telling custom layers they're starting
-                        if (activeLayer is CustomLayerWrapper customNewLayer)
-                        {
-                            customNewLayer.Start();
-                        }
+                        // Call the active layer's Update() method
+                        __result = activeLayer.Update(new GStruct8<BotLogicDecision>?(prevResult));
+                        return false;
                     }
-
-                    // Call the active layer's Update() method
-                    __result = activeLayer.Update(new GStruct8<BotLogicDecision>?(prevResult));
-                    return false;
                 }
-            }
 
-            // No layers are active, return null
-            __result = null;
-            return false;
+                // No layers are active, return null
+                __result = null;
+                return false;
+
+#if DEBUG
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                throw ex;
+            }
+#endif
         }
     }
 }

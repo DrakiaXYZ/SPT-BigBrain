@@ -22,22 +22,36 @@ namespace DrakiaXYZ.BigBrain.Patches
         [PatchPrefix]
         public static bool PatchPrefix(BotOwner ___botOwner_0, BotLogicDecision decision, ref object __result)
         {
-            int logicIndex = (int)decision;
-            if (logicIndex >= BrainManager.START_LOGIC_ID)
+#if DEBUG
+            try
             {
-                // Get the offset in the logic list
-                logicIndex -= BrainManager.START_LOGIC_ID;
+#endif
 
-                Type logicType = BrainManager.Instance.CustomLogicList[logicIndex];
-                CustomLogicWrapper customLogicWrapper = new CustomLogicWrapper(logicType, ___botOwner_0);
-                __result = customLogicWrapper;
+                int logicIndex = (int)decision;
+                if (logicIndex >= BrainManager.START_LOGIC_ID)
+                {
+                    // Get the offset in the logic list
+                    logicIndex -= BrainManager.START_LOGIC_ID;
 
-                Logger.LogDebug($"Setting bot {___botOwner_0.name} logic to {logicType.FullName}");
+                    Type logicType = BrainManager.Instance.CustomLogicList[logicIndex];
+                    CustomLogicWrapper customLogicWrapper = new CustomLogicWrapper(logicType, ___botOwner_0);
+                    __result = customLogicWrapper;
 
-                return false;
+                    Logger.LogDebug($"Setting bot {___botOwner_0.name} logic to {logicType.FullName}");
+
+                    return false;
+                }
+
+                return true;
+
+#if DEBUG
             }
-
-            return true;
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                throw ex;
+            }
+#endif
         }
     }
 }

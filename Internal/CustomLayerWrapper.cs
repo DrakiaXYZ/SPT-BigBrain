@@ -37,10 +37,10 @@ namespace DrakiaXYZ.BigBrain.Internal
             {
                 throw new ArgumentException($"Custom logic type {action.Type.FullName} must inherit CustomLogic");
             }
-#if DEBUG
-            Logger.LogDebug($"{botOwner_0.name} NextAction: {action.Type.FullName}");
-            Logger.LogDebug($"    Reason: {action.Reason}");
-#endif
+//#if DEBUG
+//            Logger.LogDebug($"{botOwner_0.name} NextAction: {action.Type.FullName}");
+//            Logger.LogDebug($"    Reason: {action.Reason}");
+//#endif
 
             customLayer.CurrentAction = action;
 

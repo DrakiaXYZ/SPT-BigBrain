@@ -1,13 +1,11 @@
 ﻿using Aki.Reflection.Patching;
 using DrakiaXYZ.BigBrain.Internal;
-using EFT;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
+using AICoreLogicLayerClass = GClass28<BotLogicDecision>; // GClass28 = AICoreLayerClass
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
@@ -43,10 +41,10 @@ namespace DrakiaXYZ.BigBrain.Patches
 #endif
 
                 // Get values we'll use later
-                List<GClass28<BotLogicDecision>> activeLayerList = _activeLayerListField.GetValue(__instance) as List<GClass28<BotLogicDecision>>;
-                GClass28<BotLogicDecision> activeLayer = _activeLayerGetter.Invoke(__instance, null) as GClass28<BotLogicDecision>;
+                List<AICoreLogicLayerClass> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLogicLayerClass>;
+                AICoreLogicLayerClass activeLayer = _activeLayerGetter.Invoke(__instance, null) as AICoreLogicLayerClass;
 
-                foreach (GClass28<BotLogicDecision> layer in activeLayerList)
+                foreach (AICoreLogicLayerClass layer in activeLayerList)
                 {
                     if (layer.ShallUseNow())
                     {
@@ -60,7 +58,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 
                             activeLayer = layer;
                             _activeLayerSetter.Invoke(__instance, new object[] { layer });
-                            Action<GClass28<BotLogicDecision>> action = _onLayerChangedToField.GetValue(__instance) as Action<GClass28<BotLogicDecision>>;
+                            Action<AICoreLogicLayerClass> action = _onLayerChangedToField.GetValue(__instance) as Action<AICoreLogicLayerClass>;
                             if (action != null)
                             {
                                 action(activeLayer);

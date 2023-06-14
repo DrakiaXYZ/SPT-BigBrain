@@ -1,8 +1,13 @@
-﻿using System;
+﻿using DrakiaXYZ.BigBrain.Internal;
+using EFT;
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
+
+using AICoreLogicAgentClass = GClass26<BotLogicDecision>; // GClass26 = AICoreAgentClass
+using AICoreLogicLayerClass = GClass28<BotLogicDecision>; // GClass28 = AICoreLayerClass
+using AICoreLogicStrategyClass = GClass216<BotLogicDecision>; // GClass216 = AICoreStrategyClass
 
 namespace DrakiaXYZ.BigBrain.Brains
 {
@@ -31,6 +36,9 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal Dictionary<Type, int> CustomLogics = new Dictionary<Type, int>();
         internal List<Type> CustomLogicList = new List<Type>();
         internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
+
+        private static MethodInfo _activeLayerGetter = AccessTools.PropertyGetter(typeof(BotBaseBrainClass).BaseType, "GClass28_0");
+        private static FieldInfo _strategyField = AccessTools.Field(typeof(AICoreLogicAgentClass), "gclass216_0");
 
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }
@@ -83,6 +91,39 @@ namespace DrakiaXYZ.BigBrain.Brains
         public static void RemoveLayer(string layerName, List<string> brainNames)
         {
             Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
+        }
+
+        public static bool IsCustomLayerActive(BotOwner botOwner)
+        {
+            object activeLayer = GetActiveLayer(botOwner);
+            if (activeLayer is CustomLayer)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static string GetActiveLayerName(BotOwner botOwner)
+        {
+            return botOwner.Brain.ActiveLayerName();
+        }
+
+        /**
+         * Return the currently active base layer, which will extend "AICoreLayerClass", or the active
+         * CustomLayer if a custom layer is enabled
+         **/
+        public static object GetActiveLayer(BotOwner botOwner)
+        {
+            AICoreLogicStrategyClass botBrainStrategy = _strategyField.GetValue(botOwner.Brain.Agent) as AICoreLogicStrategyClass;
+            AICoreLogicLayerClass activeLayer = _activeLayerGetter.Invoke(botBrainStrategy, null) as AICoreLogicLayerClass;
+
+            if (activeLayer is CustomLayerWrapper customLayerWrapper)
+            {
+                return customLayerWrapper.CustomLayer();
+            }
+
+            return activeLayer;
         }
     }
 }

@@ -6,9 +6,15 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
+using BaseLogicLayerSimpleClass = GClass30;
+using AICoreLogicAgentClass = GClass26<BotLogicDecision>; // GClass26 = AICoreAgentClass
+using AICoreNode = GClass103;
+using AICoreActionEnd = GStruct7;
+using AILogicActionResult = GStruct8<BotLogicDecision>; // GStruct8 = AICoreActionResult
+
 namespace DrakiaXYZ.BigBrain.Internal
 {
-    internal class CustomLayerWrapper : GClass30
+    internal class CustomLayerWrapper : BaseLogicLayerSimpleClass
     {
         private static FieldInfo _logicInstanceDictField = null;
 
@@ -16,20 +22,24 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         protected ManualLogSource Logger;
         private readonly CustomLayer customLayer;
+        private AICoreActionEnd endAction;
+        private AICoreActionEnd continueAction;
 
         public CustomLayerWrapper(Type customLayerType, BotOwner bot, int priority) : base(bot, priority)
         {
             Logger = BepInEx.Logging.Logger.CreateLogSource(GetType().Name);
             customLayer = (CustomLayer)Activator.CreateInstance(customLayerType, new object[] { bot, priority });
+            endAction = gstruct7_0;
+            continueAction = gstruct7_1;
 
             if (_logicInstanceDictField == null)
             {
-                Type botAgentType = typeof(GClass26<BotLogicDecision>);
+                Type botAgentType = typeof(AICoreLogicAgentClass);
                 _logicInstanceDictField = AccessTools.Field(botAgentType, "dictionary_0");
             }
         }
 
-        public override GStruct8<BotLogicDecision> GetDecision()
+        public override AILogicActionResult GetDecision()
         {
             CustomLayer.Action action = customLayer.GetNextAction();
 
@@ -51,7 +61,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 BrainManager.Instance.CustomLogicList.Add(action.Type);
             }
 
-            return new GStruct8<BotLogicDecision>((BotLogicDecision)logicId, action.Reason);
+            return new AILogicActionResult((BotLogicDecision)logicId, action.Reason);
         }
 
         public override string Name()
@@ -64,28 +74,28 @@ namespace DrakiaXYZ.BigBrain.Internal
             return customLayer.IsActive();
         }
 
-        public override GStruct7 ShallEndCurrentDecision(GStruct8<BotLogicDecision> curDecision)
+        public override AICoreActionEnd ShallEndCurrentDecision(AILogicActionResult curDecision)
         {
             // If this isn't a custom action, we want to end it (So we can take control)
             if ((int)curDecision.Action < BrainManager.START_LOGIC_ID)
             {
                 customLayer.CurrentAction = null;
-                return gstruct7_0;
+                return endAction;
             }
 
             // If the custom layer has a null action, we've switched between custom layers, so return that we're ending
             if (customLayer.CurrentAction == null)
             {
-                return gstruct7_0;
+                return endAction;
             }
 
             if (customLayer.IsCurrentActionEnding())
             {
                 StopCurrentLogic();
-                return gstruct7_0;
+                return endAction;
             }
 
-            return gstruct7_1;
+            return continueAction;
         }
 
         public void Start()
@@ -112,7 +122,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
         }
 
-        private CustomLogicWrapper GetLogicInstance(BotLogicDecision logicId)
+        private CustomLogicWrapper GetLogicInstance(BotLogicDecision logicDecision)
         {
             // Sanity check
             if (botOwner_0?.Brain?.Agent == null)
@@ -120,13 +130,19 @@ namespace DrakiaXYZ.BigBrain.Internal
                 return null;
             }
 
-            Dictionary<BotLogicDecision, GClass103> logicInstanceDict = _logicInstanceDictField.GetValue(botOwner_0.Brain.Agent) as Dictionary<BotLogicDecision, GClass103>;
-            if (logicInstanceDict.TryGetValue(logicId, out GClass103 logicInstance))
+            Dictionary<BotLogicDecision, AICoreNode> aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner_0.Brain.Agent) as Dictionary<BotLogicDecision, AICoreNode>;
+            if (aiCoreNodeDict.TryGetValue(logicDecision, out AICoreNode nodeInstance))
             {
-                return logicInstance as CustomLogicWrapper;
+                return nodeInstance as CustomLogicWrapper;
             }
 
             return null;
         }
+
+        internal CustomLayer CustomLayer()
+        {
+            return customLayer;
+        }
+
     }
 }

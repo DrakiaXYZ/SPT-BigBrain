@@ -1,14 +1,12 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using BaseNodeClass = GClass104;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {
-    internal class CustomLogicWrapper : GClass104
+    internal class CustomLogicWrapper : BaseNodeClass
     {
         private CustomLogic customLogic;
 

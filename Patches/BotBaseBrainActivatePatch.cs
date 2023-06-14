@@ -4,7 +4,6 @@ using DrakiaXYZ.BigBrain.Internal;
 using EFT;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace DrakiaXYZ.BigBrain.Patches

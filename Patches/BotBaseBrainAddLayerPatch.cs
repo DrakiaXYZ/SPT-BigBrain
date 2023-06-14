@@ -3,13 +3,14 @@ using DrakiaXYZ.BigBrain.Brains;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+
+using AICoreLogicLayerClass = GClass28<BotLogicDecision>; // GClass28 = AICoreLayerClass
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
     /**
-     * Patch the layer add method (method_0) of GClass216, so we can disable layers, and insert custom layers
+     * Patch the layer add method (method_0) of GClass216 (AICoreStrategyClass), so we can disable layers, and insert custom layers
      * as higher priority than default layers
      **/
     internal class BotBaseBrainAddLayerPatch : ModulePatch
@@ -29,7 +30,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(object __instance, int index, GClass28<BotLogicDecision> layer, bool activeOnStart, ref bool __result)
+        public static bool PatchPrefix(object __instance, int index, AICoreLogicLayerClass layer, bool activeOnStart, ref bool __result)
         {
             // Make sure we're not excluding this layer from this brain
             BotBaseBrainClass botBrain = __instance as BotBaseBrainClass;
@@ -43,7 +44,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                 }
             }
 
-            Dictionary<int, GClass28<BotLogicDecision>> layerDictionary = _layerDictionary.GetValue(__instance) as Dictionary<int, GClass28<BotLogicDecision>>;
+            Dictionary<int, AICoreLogicLayerClass> layerDictionary = _layerDictionary.GetValue(__instance) as Dictionary<int, AICoreLogicLayerClass>;
 
             // Make sure the layer index doesn't already exist
             if (layerDictionary.ContainsKey(index))

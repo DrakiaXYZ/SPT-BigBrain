@@ -71,26 +71,36 @@ namespace DrakiaXYZ.BigBrain.Brains
             }
         }
 
-        public static int AddCustomLayer(Type customLayerType, List<string> customLayerBrains, int customLayerPriority)
+        public static int AddCustomLayer(Type customLayerType, List<string> brainNames, int customLayerPriority)
         {
             if (!typeof(CustomLayer).IsAssignableFrom(customLayerType))
             {
                 throw new ArgumentException($"Custom layer type {customLayerType.FullName} must inherit CustomLayer");
             }
 
-            if (customLayerBrains.Count == 0)
+            if (brainNames.Count == 0)
             {
                 throw new ArgumentException($"Custom layer type {customLayerType.FullName} must specify at least 1 brain to be added to");
             }
 
             int customLayerId = _currentLayerId++;
-            Instance.CustomLayers.Add(customLayerId, new LayerInfo(customLayerType, customLayerBrains, customLayerPriority, customLayerId));
+            Instance.CustomLayers.Add(customLayerId, new LayerInfo(customLayerType, brainNames, customLayerPriority, customLayerId));
             return customLayerId;
+        }
+
+        public static void AddCustomLayers(List<Type> customLayerTypes, List<string> brainNames, int customLayerPriority)
+        {
+            customLayerTypes.ForEach(customLayerType => AddCustomLayer(customLayerType, brainNames, customLayerPriority));
         }
 
         public static void RemoveLayer(string layerName, List<string> brainNames)
         {
             Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
+        }
+
+        public static void RemoveLayers(List<string> layerNames, List<string> brainNames)
+        {
+            layerNames.ForEach(layerName => RemoveLayer(layerName, brainNames));
         }
 
         public static bool IsCustomLayerActive(BotOwner botOwner)

@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using AICoreLogicAgentClass = GClass26<BotLogicDecision>; // GClass26 = AICoreAgentClass
-using AICoreLogicLayerClass = GClass28<BotLogicDecision>; // GClass28 = AICoreLayerClass
-using AICoreLogicStrategyClass = GClass216<BotLogicDecision>; // GClass216 = AICoreStrategyClass
+using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
+using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
+using AICoreLogicStrategyClass = AICoreStrategyClass<BotLogicDecision>;
 
 namespace DrakiaXYZ.BigBrain.Brains
 {

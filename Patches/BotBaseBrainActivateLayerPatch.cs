@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using AICoreLogicLayerClass = GClass28<BotLogicDecision>; // GClass28 = AICoreLayerClass
+using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
     /**
-     * Patch the layer activate method (method_4) of GClass216 (AICoreStrategyClass), so we can prioritize custom layers above default layers
+     * Patch the layer activate method (method_4) of AICoreStrategyClass, so we can prioritize custom layers above default layers
      **/
     internal class BotBaseBrainActivateLayerPatch : ModulePatch
     {

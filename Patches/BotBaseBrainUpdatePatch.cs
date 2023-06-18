@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using AICoreLogicLayerClass = GClass28<BotLogicDecision>; // GClass28 = AICoreLayerClass
+using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
+using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
@@ -33,7 +34,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(object __instance, GStruct8<BotLogicDecision> prevResult, ref GStruct8<BotLogicDecision>? __result)
+        public static bool PatchPrefix(object __instance, AILogicActionResultStruct prevResult, ref AILogicActionResultStruct? __result)
         {
 #if DEBUG
             try
@@ -72,7 +73,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                         }
 
                         // Call the active layer's Update() method
-                        __result = activeLayer.Update(new GStruct8<BotLogicDecision>?(prevResult));
+                        __result = activeLayer.Update(new AILogicActionResultStruct?(prevResult));
                         return false;
                     }
                 }

@@ -6,11 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using BaseLogicLayerSimpleClass = GClass30;
-using AICoreLogicAgentClass = GClass26<BotLogicDecision>; // GClass26 = AICoreAgentClass
-using AICoreNode = GClass103;
-using AICoreActionEnd = GStruct7;
-using AILogicActionResult = GStruct8<BotLogicDecision>; // GStruct8 = AICoreActionResult
+using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
+using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
+using AICoreNodeClass = GClass103;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {
@@ -22,8 +20,8 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         protected ManualLogSource Logger;
         private readonly CustomLayer customLayer;
-        private AICoreActionEnd endAction;
-        private AICoreActionEnd continueAction;
+        private AICoreActionEndStruct endAction;
+        private AICoreActionEndStruct continueAction;
 
         public CustomLayerWrapper(Type customLayerType, BotOwner bot, int priority) : base(bot, priority)
         {
@@ -39,7 +37,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
         }
 
-        public override AILogicActionResult GetDecision()
+        public override AILogicActionResultStruct GetDecision()
         {
             CustomLayer.Action action = customLayer.GetNextAction();
 
@@ -61,7 +59,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 BrainManager.Instance.CustomLogicList.Add(action.Type);
             }
 
-            return new AILogicActionResult((BotLogicDecision)logicId, action.Reason);
+            return new AILogicActionResultStruct((BotLogicDecision)logicId, action.Reason);
         }
 
         public override string Name()
@@ -74,7 +72,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             return customLayer.IsActive();
         }
 
-        public override AICoreActionEnd ShallEndCurrentDecision(AILogicActionResult curDecision)
+        public override AICoreActionEndStruct ShallEndCurrentDecision(AILogicActionResultStruct curDecision)
         {
             // If this isn't a custom action, we want to end it (So we can take control)
             if ((int)curDecision.Action < BrainManager.START_LOGIC_ID)
@@ -130,8 +128,8 @@ namespace DrakiaXYZ.BigBrain.Internal
                 return null;
             }
 
-            Dictionary<BotLogicDecision, AICoreNode> aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner_0.Brain.Agent) as Dictionary<BotLogicDecision, AICoreNode>;
-            if (aiCoreNodeDict.TryGetValue(logicDecision, out AICoreNode nodeInstance))
+            Dictionary<BotLogicDecision, AICoreNodeClass> aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner_0.Brain.Agent) as Dictionary<BotLogicDecision, AICoreNodeClass>;
+            if (aiCoreNodeDict.TryGetValue(logicDecision, out AICoreNodeClass nodeInstance))
             {
                 return nodeInstance as CustomLogicWrapper;
             }

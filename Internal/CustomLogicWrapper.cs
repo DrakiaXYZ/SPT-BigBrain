@@ -2,8 +2,6 @@
 using EFT;
 using System;
 
-using BaseNodeClass = GClass104;
-
 namespace DrakiaXYZ.BigBrain.Internal
 {
     internal class CustomLogicWrapper : BaseNodeClass

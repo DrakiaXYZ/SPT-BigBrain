@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using AICoreLogicAgentClass = GClass26<BotLogicDecision>; // GClass26 = AICoreAgentClass
+using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
 using AICoreNode = GClass103;
-using AILogicActionResult = GStruct8<BotLogicDecision>; // GStruct8 = AICoreActionResult
+using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
@@ -48,8 +48,8 @@ namespace DrakiaXYZ.BigBrain.Patches
                 brain.ManualUpdate();
 
                 // Call the brain update
-                AILogicActionResult lastResult = (AILogicActionResult)_lastResultField.GetValue(__instance);
-                AILogicActionResult? result = brain.Update(lastResult);
+                AILogicActionResultStruct lastResult = (AILogicActionResultStruct)_lastResultField.GetValue(__instance);
+                AILogicActionResultStruct? result = brain.Update(lastResult);
                 if (result != null)
                 {
                     // If an instance of our action doesn't exist in our dict, add it

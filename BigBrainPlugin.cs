@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Bootstrap;
 using DrakiaXYZ.BigBrain.Patches;
 using DrakiaXYZ.BigBrain.VersionChecker;
 using System;
@@ -14,6 +15,12 @@ namespace DrakiaXYZ.BigBrain
 
             if (!TarkovVersion.CheckEftVersion(Logger, Info, Config))
             {
+                // TODO: Remove when a new EFT version comes out. For now, force remove
+                //       ourselves from the list of plugins, so other plugins can know
+                //       that we are not loaded
+                Chainloader.PluginInfos.Remove(Info.Metadata.GUID);
+                // End TODO
+
                 throw new Exception($"Invalid EFT Version");
             }
 

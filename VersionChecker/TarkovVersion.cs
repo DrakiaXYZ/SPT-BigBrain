@@ -1,10 +1,13 @@
-﻿using BepInEx;
+﻿using Aki.Common.Http;
+using Aki.Common.Utils;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace DrakiaXYZ.BigBrain.VersionChecker
@@ -67,7 +70,33 @@ namespace DrakiaXYZ.BigBrain.VersionChecker
                 return false;
             }
 
+            // Because 3.5.7 and 3.5.8 are both 23399, but have different remappings, we need to do an extra check
+            // here that the actual SPT version is what we expect. 
+            // TODO: Once a new EFT version comes out, we can drop this
+            if (currentVersion == 23399)
+            {
+                Version expectedSptVersion = new Version(3, 5, 8);
+                Version sptVersion = GetSptVersion();
+                if (sptVersion != expectedSptVersion)
+                {
+                    string errorMessage = $"ERROR: This version of {Info.Metadata.Name} v{Info.Metadata.Version} was built for SPT {expectedSptVersion}, but you are running {sptVersion}. Please download the correct plugin version.";
+                    Logger.LogError(errorMessage);
+                    return false;
+                }
+            }
+            // TODO: Delete above when we have a new assembly version
+
             return true;
+        }
+
+        public static Version GetSptVersion()
+        {
+            var json = RequestHandler.GetJson("/singleplayer/settings/version");
+            string version = Json.Deserialize<VersionResponse>(json).Version;
+            version = Regex.Match(version, @"(\d+\.?)+").Value;
+
+            Console.WriteLine($"SPT Version: {version}");
+            return Version.Parse(version);
         }
 
         static void ErrorLabelDrawer(ConfigEntryBase entry)
@@ -89,6 +118,11 @@ namespace DrakiaXYZ.BigBrain.VersionChecker
             // Centered red disabled text
             GUILayout.Label("Plugin has been disabled!", styleError, new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
             GUILayout.EndVertical();
+        }
+
+        public struct VersionResponse
+        {
+            public string Version { get; set; }
         }
 
 #pragma warning disable 0169, 0414, 0649

@@ -1,5 +1,6 @@
 ﻿using EFT;
 using System;
+using System.Text;
 
 namespace DrakiaXYZ.BigBrain.Brains
 {
@@ -22,6 +23,8 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public virtual void Start() { }
         public virtual void Stop() { }
+
+        public virtual void BuildDebugText(StringBuilder stringBuilder) { }
         
         public class Action
         {

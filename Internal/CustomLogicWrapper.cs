@@ -27,5 +27,10 @@ namespace DrakiaXYZ.BigBrain.Internal
         {
             customLogic.Stop();
         }
+
+        internal CustomLogic CustomLogic()
+        {
+            return customLogic;
+        }
     }
 }

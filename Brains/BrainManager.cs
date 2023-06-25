@@ -125,15 +125,45 @@ namespace DrakiaXYZ.BigBrain.Brains
          **/
         public static object GetActiveLayer(BotOwner botOwner)
         {
-            AICoreLogicStrategyClass botBrainStrategy = _strategyField.GetValue(botOwner.Brain.Agent) as AICoreLogicStrategyClass;
-            AICoreLogicLayerClass activeLayer = _activeLayerGetter.Invoke(botBrainStrategy, null) as AICoreLogicLayerClass;
+            if (botOwner?.Brain?.Agent == null)
+            {
+                return null;
+            }
 
+            AICoreLogicStrategyClass botBrainStrategy = _strategyField.GetValue(botOwner.Brain.Agent) as AICoreLogicStrategyClass;
+            if (botBrainStrategy == null)
+            {
+                return null;
+            }
+
+            AICoreLogicLayerClass activeLayer = _activeLayerGetter.Invoke(botBrainStrategy, null) as AICoreLogicLayerClass;
             if (activeLayer is CustomLayerWrapper customLayerWrapper)
             {
                 return customLayerWrapper.CustomLayer();
             }
 
             return activeLayer;
+        }
+
+        /**
+         * Return the current active logic instance, which will extend "BaseNodeClass", or the active
+         * CustomLogic if a custom logic is enabled
+         * Note: This is mostly here for BotDebug, please don't use this in plugins
+         **/
+        public static object GetActiveLogic(BotOwner botOwner)
+        {
+            if (botOwner == null)
+            {
+                return null;
+            }
+
+            BaseNodeClass activeLogic = CustomLayerWrapper.GetLogicInstance(botOwner);
+            if (activeLogic is CustomLogicWrapper customLogicWrapper)
+            {
+                return customLogicWrapper.CustomLogic();
+            }
+
+            return activeLogic;
         }
     }
 }

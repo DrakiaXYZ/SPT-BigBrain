@@ -111,27 +111,27 @@ namespace DrakiaXYZ.BigBrain.Internal
         private void StopCurrentLogic()
         {
             customLayer.CurrentAction = null;
-
-            BotLogicDecision logicId = botOwner_0.Brain.Agent.LastResult().Action;
-            CustomLogicWrapper logicInstance = GetLogicInstance(logicId);
+            CustomLogicWrapper logicInstance = GetLogicInstance(botOwner_0) as CustomLogicWrapper;
             if (logicInstance != null)
             {
                 logicInstance.Stop();
             }
         }
 
-        private CustomLogicWrapper GetLogicInstance(BotLogicDecision logicDecision)
+        static internal BaseNodeClass GetLogicInstance(BotOwner botOwner)
         {
             // Sanity check
-            if (botOwner_0?.Brain?.Agent == null)
+            if (botOwner?.Brain?.Agent == null)
             {
                 return null;
             }
 
-            Dictionary<BotLogicDecision, AICoreNodeClass> aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner_0.Brain.Agent) as Dictionary<BotLogicDecision, AICoreNodeClass>;
+            BotLogicDecision logicDecision = botOwner.Brain.Agent.LastResult().Action;
+
+            Dictionary<BotLogicDecision, AICoreNodeClass> aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner.Brain.Agent) as Dictionary<BotLogicDecision, AICoreNodeClass>;
             if (aiCoreNodeDict.TryGetValue(logicDecision, out AICoreNodeClass nodeInstance))
             {
-                return nodeInstance as CustomLogicWrapper;
+                return nodeInstance as BaseNodeClass;
             }
 
             return null;

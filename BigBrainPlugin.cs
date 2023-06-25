@@ -6,7 +6,8 @@ using System;
 
 namespace DrakiaXYZ.BigBrain
 {
-    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "0.1.3")]
+    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "0.1.4")]
+    [BepInDependency("com.spt-aki.core", "3.5.8")]
     internal class BigBrainPlugin : BaseUnityPlugin
     {
         private void Awake()
@@ -15,12 +16,6 @@ namespace DrakiaXYZ.BigBrain
 
             if (!TarkovVersion.CheckEftVersion(Logger, Info, Config))
             {
-                // TODO: Remove when a new EFT version comes out. For now, force remove
-                //       ourselves from the list of plugins, so other plugins can know
-                //       that we are not loaded
-                Chainloader.PluginInfos.Remove(Info.Metadata.GUID);
-                // End TODO
-
                 throw new Exception($"Invalid EFT Version");
             }
 

@@ -70,22 +70,6 @@ namespace DrakiaXYZ.BigBrain.VersionChecker
                 return false;
             }
 
-            // Because 3.5.7 and 3.5.8 are both 23399, but have different remappings, we need to do an extra check
-            // here that the actual SPT version is what we expect. 
-            // TODO: Once a new EFT version comes out, we can drop this
-            if (currentVersion == 23399)
-            {
-                Version expectedSptVersion = new Version(3, 5, 8);
-                Version sptVersion = GetSptVersion();
-                if (sptVersion != expectedSptVersion)
-                {
-                    string errorMessage = $"ERROR: This version of {Info.Metadata.Name} v{Info.Metadata.Version} was built for SPT {expectedSptVersion}, but you are running {sptVersion}. Please download the correct plugin version.";
-                    Logger.LogError(errorMessage);
-                    return false;
-                }
-            }
-            // TODO: Delete above when we have a new assembly version
-
             return true;
         }
 

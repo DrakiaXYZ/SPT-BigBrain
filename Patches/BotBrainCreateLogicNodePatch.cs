@@ -36,8 +36,9 @@ namespace DrakiaXYZ.BigBrain.Patches
                     Type logicType = BrainManager.Instance.CustomLogicList[logicIndex];
                     CustomLogicWrapper customLogicWrapper = new CustomLogicWrapper(logicType, ___botOwner_0);
                     __result = customLogicWrapper;
-
+#if DEBUG
                     Logger.LogDebug($"Setting bot {___botOwner_0.name} logic to {logicType.FullName}");
+#endif
 
                     return false;
                 }

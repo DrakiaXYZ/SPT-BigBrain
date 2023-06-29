@@ -1,13 +1,10 @@
-﻿using Aki.Common.Http;
-using Aki.Common.Utils;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace DrakiaXYZ.BigBrain.VersionChecker
@@ -71,16 +68,6 @@ namespace DrakiaXYZ.BigBrain.VersionChecker
             }
 
             return true;
-        }
-
-        public static Version GetSptVersion()
-        {
-            var json = RequestHandler.GetJson("/singleplayer/settings/version");
-            string version = Json.Deserialize<VersionResponse>(json).Version;
-            version = Regex.Match(version, @"(\d+\.?)+").Value;
-
-            Console.WriteLine($"SPT Version: {version}");
-            return Version.Parse(version);
         }
 
         static void ErrorLabelDrawer(ConfigEntryBase entry)

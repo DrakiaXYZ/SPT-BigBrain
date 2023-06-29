@@ -38,7 +38,9 @@ namespace DrakiaXYZ.BigBrain.Patches
             {
                 if (layer.Name() == excludeInfo.excludeLayerName && excludeInfo.excludeLayerBrains.Contains(botBrain.ShortName()))
                 {
+#if DEBUG
                     Logger.LogDebug($"Skipping adding {layer.Name()} to {botBrain.ShortName()} as it was removed");
+#endif
                     __result = false;
                     return false;
                 }

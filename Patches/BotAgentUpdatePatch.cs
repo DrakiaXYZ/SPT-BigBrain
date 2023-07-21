@@ -2,11 +2,10 @@
 using DrakiaXYZ.BigBrain.Internal;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Reflection;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
-using AICoreNode = GClass103;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
 
 namespace DrakiaXYZ.BigBrain.Patches
@@ -25,10 +24,10 @@ namespace DrakiaXYZ.BigBrain.Patches
         {
             Type botAgentType = typeof(AICoreLogicAgentClass);
 
-            _strategyField = AccessTools.Field(botAgentType, "gclass216_0");
-            _lastResultField = AccessTools.Field(botAgentType, "gstruct8_0");
-            _logicInstanceDictField = AccessTools.Field(botAgentType, "dictionary_0");
-            _lazyGetterField = AccessTools.Field(botAgentType, "func_0");
+            _strategyField = Utils.GetFieldByType(botAgentType, typeof(AICoreStrategyClass<>));
+            _lastResultField = Utils.GetFieldByType(botAgentType, typeof(AILogicActionResultStruct));
+            _logicInstanceDictField = Utils.GetFieldByType(botAgentType, typeof(IDictionary));
+            _lazyGetterField = Utils.GetFieldByType(botAgentType, typeof(Delegate));
 
             return AccessTools.Method(botAgentType, "Update");
         }
@@ -42,7 +41,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 
                 // Get values we'll use later
                 BotBaseBrainClass strategy = _strategyField.GetValue(__instance) as BotBaseBrainClass;
-                Dictionary<BotLogicDecision, AICoreNode> aiCoreNodeDict = _logicInstanceDictField.GetValue(__instance) as Dictionary<BotLogicDecision, AICoreNode>;
+                var aiCoreNodeDict = _logicInstanceDictField.GetValue(__instance) as IDictionary;
 
                 // Update the brain, this is instead of method_10 in the original code
                 strategy.ManualUpdate();
@@ -54,10 +53,11 @@ namespace DrakiaXYZ.BigBrain.Patches
                 {
                     // If an instance of our action doesn't exist in our dict, add it
                     int action = (int)result.Value.Action;
-                    if (!aiCoreNodeDict.TryGetValue((BotLogicDecision)action, out AICoreNode nodeInstance))
+                    BaseNodeClass nodeInstance = aiCoreNodeDict[(BotLogicDecision)action] as BaseNodeClass;
+                    if (nodeInstance == null)
                     {
-                        Func<BotLogicDecision, AICoreNode> lazyGetter = _lazyGetterField.GetValue(__instance) as Func<BotLogicDecision, AICoreNode>;
-                        nodeInstance = lazyGetter((BotLogicDecision)action);
+                        Delegate lazyGetter = _lazyGetterField.GetValue(__instance) as Delegate;
+                        nodeInstance = lazyGetter.DynamicInvoke(new object[] { (BotLogicDecision)action }) as BaseNodeClass;
 
                         if (nodeInstance != null)
                         {

@@ -25,10 +25,12 @@ namespace DrakiaXYZ.BigBrain.Patches
             Type botLogicBrainType = typeof(BotBaseBrainClass);
             Type botBaseBrainType = botLogicBrainType.BaseType;
 
-            _activeLayerGetter = AccessTools.PropertyGetter(botBaseBrainType, "GClass28_0");
-            _activeLayerSetter = AccessTools.PropertySetter(botBaseBrainType, "GClass28_0");
-            _activeLayerListField = AccessTools.Field(botBaseBrainType, "list_0");
-            _onLayerChangedToField = AccessTools.Field(botBaseBrainType, "action_0");
+            string activeLayerPropertyName = Utils.GetPropertyNameByType(botBaseBrainType, typeof(AICoreLogicLayerClass));
+            _activeLayerGetter = AccessTools.PropertyGetter(botBaseBrainType, activeLayerPropertyName);
+            _activeLayerSetter = AccessTools.PropertySetter(botBaseBrainType, activeLayerPropertyName);
+
+            _activeLayerListField = Utils.GetFieldByType(botBaseBrainType, typeof(List<AICoreLogicLayerClass>));
+            _onLayerChangedToField = Utils.GetFieldByType(botBaseBrainType, typeof(Action<AICoreLogicLayerClass>));
 
             return AccessTools.Method(botBaseBrainType, "Update");
         }

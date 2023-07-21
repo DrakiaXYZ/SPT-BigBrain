@@ -3,12 +3,11 @@ using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
+using System.Collections;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
-using AICoreNodeClass = GClass103;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {
@@ -20,15 +19,13 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         protected ManualLogSource Logger;
         private readonly CustomLayer customLayer;
-        private AICoreActionEndStruct endAction;
-        private AICoreActionEndStruct continueAction;
+        private AICoreActionEndStruct endAction = new AICoreActionEndStruct("Base logic", true);
+        private AICoreActionEndStruct continueAction = new AICoreActionEndStruct(null, false);
 
         public CustomLayerWrapper(Type customLayerType, BotOwner bot, int priority) : base(bot, priority)
         {
             Logger = BepInEx.Logging.Logger.CreateLogSource(GetType().Name);
             customLayer = (CustomLayer)Activator.CreateInstance(customLayerType, new object[] { bot, priority });
-            endAction = gstruct7_0;
-            continueAction = gstruct7_1;
 
             if (_logicInstanceDictField == null)
             {
@@ -127,15 +124,8 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
             BotLogicDecision logicDecision = botOwner.Brain.Agent.LastResult().Action;
-
-            // TODO: Can I genericize this to avoid the GClass103 reference?
-            Dictionary<BotLogicDecision, AICoreNodeClass> aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner.Brain.Agent) as Dictionary<BotLogicDecision, AICoreNodeClass>;
-            if (aiCoreNodeDict.TryGetValue(logicDecision, out AICoreNodeClass nodeInstance))
-            {
-                return nodeInstance as BaseNodeClass;
-            }
-
-            return null;
+            var aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner.Brain.Agent) as IDictionary;
+            return aiCoreNodeDict[logicDecision] as BaseNodeClass;
         }
 
         internal CustomLayer CustomLayer()

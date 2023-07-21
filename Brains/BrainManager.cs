@@ -36,8 +36,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal List<Type> CustomLogicList = new List<Type>();
         internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
 
-        // TODO: Rewrite this using reflection to avoid "gclass" name reference
-        private static FieldInfo _strategyField = AccessTools.Field(typeof(AICoreLogicAgentClass), "gclass216_0");
+        private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(BotBaseBrainClass));
 
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }

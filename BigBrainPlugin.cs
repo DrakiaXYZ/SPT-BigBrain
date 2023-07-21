@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Bootstrap;
 using DrakiaXYZ.BigBrain.Patches;
 using DrakiaXYZ.BigBrain.VersionChecker;
 using System;

@@ -16,7 +16,7 @@ namespace DrakiaXYZ.BigBrain.Patches
      **/
     internal class BotAgentUpdatePatch : ModulePatch
     {
-        private static FieldInfo _brainFieldInfo;
+        private static FieldInfo _strategyField;
         private static FieldInfo _lastResultField;
         private static FieldInfo _logicInstanceDictField;
         private static FieldInfo _lazyGetterField;
@@ -25,7 +25,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         {
             Type botAgentType = typeof(AICoreLogicAgentClass);
 
-            _brainFieldInfo = AccessTools.Field(botAgentType, "gclass216_0");
+            _strategyField = AccessTools.Field(botAgentType, "gclass216_0");
             _lastResultField = AccessTools.Field(botAgentType, "gstruct8_0");
             _logicInstanceDictField = AccessTools.Field(botAgentType, "dictionary_0");
             _lazyGetterField = AccessTools.Field(botAgentType, "func_0");
@@ -41,15 +41,15 @@ namespace DrakiaXYZ.BigBrain.Patches
 #endif
 
                 // Get values we'll use later
-                BotBaseBrainClass brain = _brainFieldInfo.GetValue(__instance) as BotBaseBrainClass;
+                BotBaseBrainClass strategy = _strategyField.GetValue(__instance) as BotBaseBrainClass;
                 Dictionary<BotLogicDecision, AICoreNode> aiCoreNodeDict = _logicInstanceDictField.GetValue(__instance) as Dictionary<BotLogicDecision, AICoreNode>;
 
                 // Update the brain, this is instead of method_10 in the original code
-                brain.ManualUpdate();
+                strategy.ManualUpdate();
 
                 // Call the brain update
                 AILogicActionResultStruct lastResult = (AILogicActionResultStruct)_lastResultField.GetValue(__instance);
-                AILogicActionResultStruct? result = brain.Update(lastResult);
+                AILogicActionResultStruct? result = strategy.Update(lastResult);
                 if (result != null)
                 {
                     // If an instance of our action doesn't exist in our dict, add it

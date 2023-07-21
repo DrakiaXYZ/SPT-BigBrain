@@ -7,7 +7,6 @@ using System.Reflection;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
-using AICoreLogicStrategyClass = AICoreStrategyClass<BotLogicDecision>;
 
 namespace DrakiaXYZ.BigBrain.Brains
 {
@@ -37,7 +36,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal List<Type> CustomLogicList = new List<Type>();
         internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
 
-        private static MethodInfo _activeLayerGetter = AccessTools.PropertyGetter(typeof(BotBaseBrainClass).BaseType, "GClass28_0");
+        // TODO: Rewrite this using reflection to avoid "gclass" name reference
         private static FieldInfo _strategyField = AccessTools.Field(typeof(AICoreLogicAgentClass), "gclass216_0");
 
         // Hide the constructor so we can have this as a guaranteed singleton
@@ -130,13 +129,13 @@ namespace DrakiaXYZ.BigBrain.Brains
                 return null;
             }
 
-            AICoreLogicStrategyClass botBrainStrategy = _strategyField.GetValue(botOwner.Brain.Agent) as AICoreLogicStrategyClass;
+            BotBaseBrainClass botBrainStrategy = _strategyField.GetValue(botOwner.Brain.Agent) as BotBaseBrainClass;
             if (botBrainStrategy == null)
             {
                 return null;
             }
 
-            AICoreLogicLayerClass activeLayer = _activeLayerGetter.Invoke(botBrainStrategy, null) as AICoreLogicLayerClass;
+            AICoreLogicLayerClass activeLayer = botBrainStrategy.CurLayerInfo;
             if (activeLayer is CustomLayerWrapper customLayerWrapper)
             {
                 return customLayerWrapper.CustomLayer();

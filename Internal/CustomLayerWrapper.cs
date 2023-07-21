@@ -128,6 +128,7 @@ namespace DrakiaXYZ.BigBrain.Internal
 
             BotLogicDecision logicDecision = botOwner.Brain.Agent.LastResult().Action;
 
+            // TODO: Can I genericize this to avoid the GClass103 reference?
             Dictionary<BotLogicDecision, AICoreNodeClass> aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner.Brain.Agent) as Dictionary<BotLogicDecision, AICoreNodeClass>;
             if (aiCoreNodeDict.TryGetValue(logicDecision, out AICoreNodeClass nodeInstance))
             {

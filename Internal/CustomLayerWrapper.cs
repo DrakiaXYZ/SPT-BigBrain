@@ -118,7 +118,7 @@ namespace DrakiaXYZ.BigBrain.Internal
         static internal BaseNodeClass GetLogicInstance(BotOwner botOwner)
         {
             // Sanity check
-            if (botOwner?.Brain?.Agent == null)
+            if (botOwner == null || botOwner.Brain?.Agent == null)
             {
                 return null;
             }

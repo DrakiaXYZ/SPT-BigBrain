@@ -26,12 +26,6 @@ namespace DrakiaXYZ.BigBrain.Internal
         {
             Logger = BepInEx.Logging.Logger.CreateLogSource(GetType().Name);
             customLayer = (CustomLayer)Activator.CreateInstance(customLayerType, new object[] { bot, priority });
-
-            if (_logicInstanceDictField == null)
-            {
-                Type botAgentType = typeof(AICoreLogicAgentClass);
-                _logicInstanceDictField = AccessTools.Field(botAgentType, "dictionary_0");
-            }
         }
 
         public override AILogicActionResultStruct GetDecision()
@@ -121,6 +115,12 @@ namespace DrakiaXYZ.BigBrain.Internal
             if (botOwner == null || botOwner.Brain?.Agent == null)
             {
                 return null;
+            }
+
+            if (_logicInstanceDictField == null)
+            {
+                Type botAgentType = typeof(AICoreLogicAgentClass);
+                _logicInstanceDictField = AccessTools.Field(botAgentType, "dictionary_0");
             }
 
             BotLogicDecision logicDecision = botOwner.Brain.Agent.LastResult().Action;

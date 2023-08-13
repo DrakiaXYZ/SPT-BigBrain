@@ -4,6 +4,7 @@ using DrakiaXYZ.BigBrain.Internal;
 using EFT;
 using HarmonyLib;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace DrakiaXYZ.BigBrain.Patches
@@ -16,7 +17,11 @@ namespace DrakiaXYZ.BigBrain.Patches
 
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(BotBrainClass), "method_0");
+            return AccessTools.GetDeclaredMethods(typeof(StandartBotBrain)).Single(x =>
+            {
+                var parms = x.GetParameters();
+                return (parms.Length == 1 && parms[0].ParameterType == typeof(BotLogicDecision) && parms[0].Name == "decision");
+            });
         }
 
         [PatchPrefix]

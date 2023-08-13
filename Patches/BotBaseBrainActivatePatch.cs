@@ -4,6 +4,7 @@ using DrakiaXYZ.BigBrain.Internal;
 using EFT;
 using HarmonyLib;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace DrakiaXYZ.BigBrain.Patches
@@ -14,16 +15,20 @@ namespace DrakiaXYZ.BigBrain.Patches
     internal class BotBaseBrainActivatePatch : ModulePatch
     {
         private static FieldInfo _botOwnerField;
-        private static MethodInfo _addLayer;
+        private static MethodInfo _addLayerMethod;
         protected override MethodBase GetTargetMethod()
         {
-            Type botLogicBrainType = typeof(BotBaseBrainClass);
-            Type botBaseBrainType = botLogicBrainType.BaseType;
+            Type baseBrainType = typeof(BaseBrain);
+            Type aiCoreStrategyType = baseBrainType.BaseType;
 
-            _botOwnerField = AccessTools.Field(botLogicBrainType, "botOwner_0");
-            _addLayer = AccessTools.Method(botBaseBrainType, "method_0");
+            _botOwnerField = AccessTools.GetDeclaredFields(baseBrainType).Single(x => x.FieldType == typeof(BotOwner));
+            _addLayerMethod = AccessTools.GetDeclaredMethods(aiCoreStrategyType).Single(x =>
+            {
+                var parms = x.GetParameters();
+                return (parms.Length == 3 && parms[0].Name == "index" && parms[1].Name == "layer");
+            });
 
-            return AccessTools.Method(botBaseBrainType, "Activate");
+            return AccessTools.Method(aiCoreStrategyType, "Activate");
         }
 
         [PatchPrefix]
@@ -31,7 +36,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         {
             try
             {
-                BotBaseBrainClass botBrain = __instance as BotBaseBrainClass;
+                BaseBrain botBrain = __instance as BaseBrain;
                 BotOwner botOwner = (BotOwner)_botOwnerField.GetValue(botBrain);
 
                 foreach (BrainManager.LayerInfo layerInfo in BrainManager.Instance.CustomLayers.Values)
@@ -42,7 +47,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 #if DEBUG
                         Logger.LogDebug($"  Injecting {customLayerWrapper.Name()}({layerInfo.customLayerId}) with priority {layerInfo.customLayerPriority}");
 #endif
-                        _addLayer.Invoke(botBrain, new object[] { layerInfo.customLayerId, customLayerWrapper, true });
+                        _addLayerMethod.Invoke(botBrain, new object[] { layerInfo.customLayerId, customLayerWrapper, true });
                     }
                 }
             }

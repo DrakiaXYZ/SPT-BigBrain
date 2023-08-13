@@ -3,6 +3,7 @@ using DrakiaXYZ.BigBrain.Internal;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
@@ -18,12 +19,16 @@ namespace DrakiaXYZ.BigBrain.Patches
 
         protected override MethodBase GetTargetMethod()
         {
-            Type botBaseBrainClassType = typeof(BotBaseBrainClass);
-            Type aiCoreStrategyClassType = botBaseBrainClassType.BaseType;
+            Type baaseBrainType = typeof(BaseBrain);
+            Type aiCoreStrategyClassType = baaseBrainType.BaseType;
 
             _activeLayerListField = AccessTools.Field(aiCoreStrategyClassType, "list_0");
 
-            return AccessTools.Method(aiCoreStrategyClassType, "method_4");
+            return AccessTools.GetDeclaredMethods(aiCoreStrategyClassType).Single(x =>
+            {
+                var parms = x.GetParameters();
+                return (parms.Length == 1 && parms[0].ParameterType == typeof(AICoreLogicLayerClass) && parms[0].Name == "layer");
+            });
         }
 
         [PatchPrefix]

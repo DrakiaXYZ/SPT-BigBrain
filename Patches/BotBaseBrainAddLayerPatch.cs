@@ -3,6 +3,7 @@ using DrakiaXYZ.BigBrain.Brains;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
@@ -20,20 +21,28 @@ namespace DrakiaXYZ.BigBrain.Patches
 
         protected override MethodBase GetTargetMethod()
         {
-            Type botLogicBrainType = typeof(BotBaseBrainClass);
-            Type botBaseBrainType = botLogicBrainType.BaseType;
+            Type baseBrainType = typeof(BaseBrain);
+            Type aiCoreStrategyType = baseBrainType.BaseType;
 
-            _layerDictionary = AccessTools.Field(botBaseBrainType, "dictionary_0");
-            _activateLayerMethod = AccessTools.Method(botBaseBrainType, "method_4");
+            _layerDictionary = AccessTools.Field(aiCoreStrategyType, "dictionary_0");
+            _activateLayerMethod = AccessTools.GetDeclaredMethods(aiCoreStrategyType).Single(x =>
+            {
+                var parms = x.GetParameters();
+                return (parms.Length == 1 && parms[0].ParameterType == typeof(AICoreLogicLayerClass) && parms[0].Name == "layer");
+            });
 
-            return AccessTools.Method(botBaseBrainType, "method_0");
+            return AccessTools.GetDeclaredMethods(aiCoreStrategyType).Single(x =>
+            {
+                var parms = x.GetParameters();
+                return (parms.Length == 3 && parms[0].Name == "index" && parms[1].Name == "layer");
+            });
         }
 
         [PatchPrefix]
         public static bool PatchPrefix(object __instance, int index, AICoreLogicLayerClass layer, bool activeOnStart, ref bool __result)
         {
             // Make sure we're not excluding this layer from this brain
-            BotBaseBrainClass botBrain = __instance as BotBaseBrainClass;
+            BaseBrain botBrain = __instance as BaseBrain;
             foreach (BrainManager.ExcludeLayerInfo excludeInfo in BrainManager.Instance.ExcludeLayers)
             {
                 if (layer.Name() == excludeInfo.excludeLayerName && excludeInfo.excludeLayerBrains.Contains(botBrain.ShortName()))

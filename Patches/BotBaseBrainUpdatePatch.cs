@@ -22,17 +22,17 @@ namespace DrakiaXYZ.BigBrain.Patches
 
         protected override MethodBase GetTargetMethod()
         {
-            Type botLogicBrainType = typeof(BotBaseBrainClass);
-            Type botBaseBrainType = botLogicBrainType.BaseType;
+            Type baseBrainType = typeof(BaseBrain);
+            Type aiCoreStrategyType = baseBrainType.BaseType;
 
-            string activeLayerPropertyName = Utils.GetPropertyNameByType(botBaseBrainType, typeof(AICoreLogicLayerClass));
-            _activeLayerGetter = AccessTools.PropertyGetter(botBaseBrainType, activeLayerPropertyName);
-            _activeLayerSetter = AccessTools.PropertySetter(botBaseBrainType, activeLayerPropertyName);
+            string activeLayerPropertyName = Utils.GetPropertyNameByType(aiCoreStrategyType, typeof(AICoreLogicLayerClass));
+            _activeLayerGetter = AccessTools.PropertyGetter(aiCoreStrategyType, activeLayerPropertyName);
+            _activeLayerSetter = AccessTools.PropertySetter(aiCoreStrategyType, activeLayerPropertyName);
 
-            _activeLayerListField = Utils.GetFieldByType(botBaseBrainType, typeof(List<AICoreLogicLayerClass>));
-            _onLayerChangedToField = Utils.GetFieldByType(botBaseBrainType, typeof(Action<AICoreLogicLayerClass>));
+            _activeLayerListField = Utils.GetFieldByType(aiCoreStrategyType, typeof(List<AICoreLogicLayerClass>));
+            _onLayerChangedToField = Utils.GetFieldByType(aiCoreStrategyType, typeof(Action<AICoreLogicLayerClass>));
 
-            return AccessTools.Method(botBaseBrainType, "Update");
+            return AccessTools.Method(aiCoreStrategyType, "Update");
         }
 
         [PatchPrefix]

@@ -1,5 +1,6 @@
 ﻿using Aki.Reflection.Patching;
 using DrakiaXYZ.BigBrain.Internal;
+using EFT;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -19,11 +20,14 @@ namespace DrakiaXYZ.BigBrain.Patches
         private static MethodInfo _activeLayerSetter;
         private static FieldInfo _activeLayerListField;
         private static FieldInfo _onLayerChangedToField;
+        private static FieldInfo _ownerField;
 
         protected override MethodBase GetTargetMethod()
         {
             Type baseBrainType = typeof(BaseBrain);
             Type aiCoreStrategyType = baseBrainType.BaseType;
+
+            _ownerField = AccessTools.Field(baseBrainType, "_owner");
 
             string activeLayerPropertyName = Utils.GetPropertyNameByType(aiCoreStrategyType, typeof(AICoreLogicLayerClass));
             _activeLayerGetter = AccessTools.PropertyGetter(aiCoreStrategyType, activeLayerPropertyName);
@@ -46,6 +50,12 @@ namespace DrakiaXYZ.BigBrain.Patches
                 // Get values we'll use later
                 List<AICoreLogicLayerClass> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLogicLayerClass>;
                 AICoreLogicLayerClass activeLayer = _activeLayerGetter.Invoke(__instance, null) as AICoreLogicLayerClass;
+
+                if (activeLayerList == null)
+                {
+                    __result = null;
+                    return false;
+                }
 
                 foreach (AICoreLogicLayerClass layer in activeLayerList)
                 {
@@ -88,6 +98,9 @@ namespace DrakiaXYZ.BigBrain.Patches
             }
             catch (Exception ex)
             {
+                BotOwner owner = _ownerField.GetValue(__instance) as BotOwner;
+                Logger.LogError($"Exception in ShallUseNow for {owner.Profile.Nickname} ({owner.name})");
+
                 Logger.LogError(ex);
                 throw ex;
             }

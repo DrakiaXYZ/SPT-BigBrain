@@ -1,4 +1,4 @@
-﻿using Aki.Reflection.Patching;
+﻿using SPT.Reflection.Patching;
 using DrakiaXYZ.BigBrain.Internal;
 using HarmonyLib;
 using System;
@@ -24,7 +24,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         {
             Type botAgentType = typeof(AICoreLogicAgentClass);
 
-            _strategyField = Utils.GetFieldByType(botAgentType, typeof(AICoreStrategyClass<>));
+            _strategyField = Utils.GetFieldByType(botAgentType, typeof(AICoreStrategyAbstractClass<>));
             _lastResultField = Utils.GetFieldByType(botAgentType, typeof(AILogicActionResultStruct));
             _logicInstanceDictField = Utils.GetFieldByType(botAgentType, typeof(IDictionary));
             _lazyGetterField = Utils.GetFieldByType(botAgentType, typeof(Delegate));
@@ -53,11 +53,11 @@ namespace DrakiaXYZ.BigBrain.Patches
                 {
                     // If an instance of our action doesn't exist in our dict, add it
                     int action = (int)result.Value.Action;
-                    BaseNodeClass nodeInstance = aiCoreNodeDict[(BotLogicDecision)action] as BaseNodeClass;
+                    BaseNodeAbstractClass nodeInstance = aiCoreNodeDict[(BotLogicDecision)action] as BaseNodeAbstractClass;
                     if (nodeInstance == null)
                     {
                         Delegate lazyGetter = _lazyGetterField.GetValue(__instance) as Delegate;
-                        nodeInstance = lazyGetter.DynamicInvoke(new object[] { (BotLogicDecision)action }) as BaseNodeClass;
+                        nodeInstance = lazyGetter.DynamicInvoke(new object[] { (BotLogicDecision)action }) as BaseNodeAbstractClass;
 
                         if (nodeInstance != null)
                         {

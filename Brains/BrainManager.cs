@@ -36,7 +36,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal List<Type> CustomLogicList = new List<Type>();
         internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
 
-        private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyClass<>));
+        private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyAbstractClass<>));
 
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }
@@ -155,7 +155,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                 return null;
             }
 
-            BaseNodeClass activeLogic = CustomLayerWrapper.GetLogicInstance(botOwner);
+            BaseNodeAbstractClass activeLogic = CustomLayerWrapper.GetLogicInstance(botOwner);
             if (activeLogic is CustomLogicWrapper customLogicWrapper)
             {
                 return customLogicWrapper.CustomLogic();

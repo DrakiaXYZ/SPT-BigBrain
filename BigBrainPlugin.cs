@@ -5,8 +5,8 @@ using System;
 
 namespace DrakiaXYZ.BigBrain
 {
-    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "0.4.0.0")]
-    [BepInDependency("com.spt-aki.core", "3.8.0")]
+    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.0.0")]
+    [BepInDependency("com.SPT.core", "3.9.0")]
     internal class BigBrainPlugin : BaseUnityPlugin
     {
         private void Awake()

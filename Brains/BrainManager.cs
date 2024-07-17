@@ -3,6 +3,7 @@ using EFT;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
@@ -31,40 +32,51 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         private static int _currentLayerId = START_LAYER_ID;
 
-        internal Dictionary<int, LayerInfo> CustomLayers = new Dictionary<int, LayerInfo>();
-        internal Dictionary<Type, int> CustomLogics = new Dictionary<Type, int>();
-        internal List<Type> CustomLogicList = new List<Type>();
-        internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
+        internal Dictionary<int, LayerInfo> customLayers = new Dictionary<int, LayerInfo>();
+        internal Dictionary<Type, int> customLogics = new Dictionary<Type, int>();
+        internal List<Type> customLogicList = new List<Type>();
+        internal List<ExcludeLayerInfo> excludeLayers = new List<ExcludeLayerInfo>();
+
+        // Allow modders to access read-only collections of the brain layers added/removed and custom logics used by bots
+        public static IReadOnlyDictionary<int, LayerInfo> CustomLayersReadOnly => Instance.customLayers.ToDictionary(i => i.Key, i => i.Value);
+        public static IReadOnlyDictionary<Type, int> CustomLogicsReadOnly => Instance.customLogics.ToDictionary(i => i.Key, i => i.Value);
+        public static IReadOnlyList<ExcludeLayerInfo> ExcludeLayersReadOnly => Instance.excludeLayers.AsReadOnly();
 
         private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyAbstractClass<>));
 
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }
 
-        internal class LayerInfo
+        public class LayerInfo
         {
-            public Type customLayerType;
-            public List<string> customLayerBrains;
-            public int customLayerPriority;
-            public int customLayerId;
+            public Type customLayerType { get; private set; }
+            public int customLayerPriority { get; private set; }
+            public int customLayerId { get; private set; }
+
+            private List<string> _customLayerBrains;
+
+            public IReadOnlyList<string> CustomLayerBrains => _customLayerBrains.AsReadOnly();
 
             public LayerInfo(Type layerType, List<string> layerBrains, int layerPriority, int layerId)
             {
                 customLayerType = layerType;
-                customLayerBrains = layerBrains;
+                _customLayerBrains = layerBrains;
                 customLayerPriority = layerPriority;
                 customLayerId = layerId;
             }
         }
 
-        internal class ExcludeLayerInfo
+        public class ExcludeLayerInfo
         {
-            public List<string> excludeLayerBrains;
-            public string excludeLayerName;
+            public string excludeLayerName { get; private set; }
+
+            private List<string> _excludeLayerBrains;
+
+            public IReadOnlyList<string> ExcludeLayerBrains => _excludeLayerBrains.AsReadOnly();
 
             public ExcludeLayerInfo(string layerName, List<string> brains)
             {
-                excludeLayerBrains = brains;
+                _excludeLayerBrains = brains;
                 excludeLayerName = layerName;
             }
         }
@@ -82,7 +94,7 @@ namespace DrakiaXYZ.BigBrain.Brains
             }
 
             int customLayerId = _currentLayerId++;
-            Instance.CustomLayers.Add(customLayerId, new LayerInfo(customLayerType, brainNames, customLayerPriority, customLayerId));
+            Instance.customLayers.Add(customLayerId, new LayerInfo(customLayerType, brainNames, customLayerPriority, customLayerId));
             return customLayerId;
         }
 
@@ -93,7 +105,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames)
         {
-            Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
+            Instance.excludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
         }
 
         public static void RemoveLayers(List<string> layerNames, List<string> brainNames)

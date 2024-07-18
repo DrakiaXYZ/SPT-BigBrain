@@ -38,7 +38,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                     // Get the offset in the logic list
                     logicIndex -= BrainManager.START_LOGIC_ID;
 
-                    Type logicType = BrainManager.Instance.customLogicList[logicIndex];
+                    Type logicType = BrainManager.Instance.CustomLogicList[logicIndex];
                     CustomLogicWrapper customLogicWrapper = new CustomLogicWrapper(logicType, ___botOwner_0);
                     __result = customLogicWrapper;
 #if DEBUG

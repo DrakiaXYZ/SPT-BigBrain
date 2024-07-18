@@ -39,7 +39,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                 BaseBrain botBrain = __instance as BaseBrain;
                 BotOwner botOwner = (BotOwner)_botOwnerField.GetValue(botBrain);
 
-                foreach (BrainManager.LayerInfo layerInfo in BrainManager.Instance.customLayers.Values)
+                foreach (BrainManager.LayerInfo layerInfo in BrainManager.Instance.CustomLayers.Values)
                 {
                     if (layerInfo.CustomLayerBrains.Contains(botBrain.ShortName()))
                     {

@@ -43,11 +43,11 @@ namespace DrakiaXYZ.BigBrain.Internal
 
             customLayer.CurrentAction = action;
 
-            if (!BrainManager.Instance.customLogics.TryGetValue(action.Type, out int logicId))
+            if (!BrainManager.Instance.CustomLogics.TryGetValue(action.Type, out int logicId))
             {
                 logicId = _currentLogicId++;
-                BrainManager.Instance.customLogics.Add(action.Type, logicId);
-                BrainManager.Instance.customLogicList.Add(action.Type);
+                BrainManager.Instance.CustomLogics.Add(action.Type, logicId);
+                BrainManager.Instance.CustomLogicList.Add(action.Type);
             }
 
             return new AILogicActionResultStruct((BotLogicDecision)logicId, action.Reason);

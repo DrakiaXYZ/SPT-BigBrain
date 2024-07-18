@@ -32,15 +32,15 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         private static int _currentLayerId = START_LAYER_ID;
 
-        internal Dictionary<int, LayerInfo> customLayers = new Dictionary<int, LayerInfo>();
-        internal Dictionary<Type, int> customLogics = new Dictionary<Type, int>();
-        internal List<Type> customLogicList = new List<Type>();
-        internal List<ExcludeLayerInfo> excludeLayers = new List<ExcludeLayerInfo>();
+        internal Dictionary<int, LayerInfo> CustomLayers = new Dictionary<int, LayerInfo>();
+        internal Dictionary<Type, int> CustomLogics = new Dictionary<Type, int>();
+        internal List<Type> CustomLogicList = new List<Type>();
+        internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
 
         // Allow modders to access read-only collections of the brain layers added/removed and custom logics used by bots
-        public static IReadOnlyDictionary<int, LayerInfo> CustomLayersReadOnly => Instance.customLayers.ToDictionary(i => i.Key, i => i.Value);
-        public static IReadOnlyDictionary<Type, int> CustomLogicsReadOnly => Instance.customLogics.ToDictionary(i => i.Key, i => i.Value);
-        public static IReadOnlyList<ExcludeLayerInfo> ExcludeLayersReadOnly => Instance.excludeLayers.AsReadOnly();
+        public static IReadOnlyDictionary<int, LayerInfo> CustomLayersReadOnly => Instance.CustomLayers.ToDictionary(i => i.Key, i => i.Value);
+        public static IReadOnlyDictionary<Type, int> CustomLogicsReadOnly => Instance.CustomLogics.ToDictionary(i => i.Key, i => i.Value);
+        public static IReadOnlyList<ExcludeLayerInfo> ExcludeLayersReadOnly => Instance.ExcludeLayers.AsReadOnly();
 
         private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyAbstractClass<>));
 
@@ -94,7 +94,7 @@ namespace DrakiaXYZ.BigBrain.Brains
             }
 
             int customLayerId = _currentLayerId++;
-            Instance.customLayers.Add(customLayerId, new LayerInfo(customLayerType, brainNames, customLayerPriority, customLayerId));
+            Instance.CustomLayers.Add(customLayerId, new LayerInfo(customLayerType, brainNames, customLayerPriority, customLayerId));
             return customLayerId;
         }
 
@@ -105,7 +105,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames)
         {
-            Instance.excludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
+            Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
         }
 
         public static void RemoveLayers(List<string> layerNames, List<string> brainNames)

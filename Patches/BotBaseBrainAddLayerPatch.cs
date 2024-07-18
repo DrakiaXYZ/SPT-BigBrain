@@ -43,7 +43,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         {
             // Make sure we're not excluding this layer from this brain
             BaseBrain botBrain = __instance as BaseBrain;
-            foreach (BrainManager.ExcludeLayerInfo excludeInfo in BrainManager.Instance.excludeLayers)
+            foreach (BrainManager.ExcludeLayerInfo excludeInfo in BrainManager.Instance.ExcludeLayers)
             {
                 if (layer.Name() == excludeInfo.excludeLayerName && excludeInfo.ExcludeLayerBrains.Contains(botBrain.ShortName()))
                 {

@@ -3,6 +3,7 @@ using EFT;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
@@ -36,35 +37,46 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal List<Type> CustomLogicList = new List<Type>();
         internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
 
+        // Allow modders to access read-only collections of the brain layers added/removed and custom logics used by bots
+        public static IReadOnlyDictionary<int, LayerInfo> CustomLayersReadOnly => Instance.CustomLayers.ToDictionary(i => i.Key, i => i.Value);
+        public static IReadOnlyDictionary<Type, int> CustomLogicsReadOnly => Instance.CustomLogics.ToDictionary(i => i.Key, i => i.Value);
+        public static IReadOnlyList<ExcludeLayerInfo> ExcludeLayersReadOnly => Instance.ExcludeLayers.AsReadOnly();
+
         private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyAbstractClass<>));
 
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }
 
-        internal class LayerInfo
+        public class LayerInfo
         {
-            public Type customLayerType;
-            public List<string> customLayerBrains;
-            public int customLayerPriority;
-            public int customLayerId;
+            public Type customLayerType { get; private set; }
+            public int customLayerPriority { get; private set; }
+            public int customLayerId { get; private set; }
+
+            private List<string> _customLayerBrains;
+
+            public IReadOnlyList<string> CustomLayerBrains => _customLayerBrains.AsReadOnly();
 
             public LayerInfo(Type layerType, List<string> layerBrains, int layerPriority, int layerId)
             {
                 customLayerType = layerType;
-                customLayerBrains = layerBrains;
+                _customLayerBrains = layerBrains;
                 customLayerPriority = layerPriority;
                 customLayerId = layerId;
             }
         }
 
-        internal class ExcludeLayerInfo
+        public class ExcludeLayerInfo
         {
-            public List<string> excludeLayerBrains;
-            public string excludeLayerName;
+            public string excludeLayerName { get; private set; }
+
+            private List<string> _excludeLayerBrains;
+
+            public IReadOnlyList<string> ExcludeLayerBrains => _excludeLayerBrains.AsReadOnly();
 
             public ExcludeLayerInfo(string layerName, List<string> brains)
             {
-                excludeLayerBrains = brains;
+                _excludeLayerBrains = brains;
                 excludeLayerName = layerName;
             }
         }

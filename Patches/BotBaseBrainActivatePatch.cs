@@ -41,7 +41,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 
                 foreach (BrainManager.LayerInfo layerInfo in BrainManager.Instance.CustomLayers.Values)
                 {
-                    if (layerInfo.customLayerBrains.Contains(botBrain.ShortName()))
+                    if (layerInfo.CustomLayerBrains.Contains(botBrain.ShortName()))
                     {
                         CustomLayerWrapper customLayerWrapper = new CustomLayerWrapper(layerInfo.customLayerType, botOwner, layerInfo.customLayerPriority);
 #if DEBUG

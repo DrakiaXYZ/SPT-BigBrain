@@ -44,6 +44,10 @@
     <Reference Include="0Harmony">
       <HintPath>..\..\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
+    <Reference Include="DissonanceVoip, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\EscapeFromTarkov_Data\Managed\DissonanceVoip.dll</HintPath>
+    </Reference>
     <Reference Include="spt-common">
       <HintPath>..\..\BepInEx\plugins\spt\spt-common.dll</HintPath>
     </Reference>
@@ -97,13 +101,13 @@
     <Compile Include="Brains\CustomBrain.cs" />
     <Compile Include="Brains\CustomLayer.cs" />
     <Compile Include="Brains\CustomLogic.cs" />
+    <Compile Include="Internal\BrainHelpers.cs" />
     <Compile Include="Internal\CustomLayerWrapper.cs" />
     <Compile Include="Internal\CustomLogicWrapper.cs" />
     <None Include="LICENSE" />
     <Compile Include="Patches\BotAgentUpdatePatch.cs" />
     <Compile Include="Patches\BotBaseBrainActivateLayerPatch.cs" />
     <Compile Include="Patches\BotBaseBrainActivatePatch.cs" />
-    <Compile Include="Patches\BotBaseBrainAddLayerPatch.cs" />
     <Compile Include="Patches\BotBaseBrainUpdatePatch.cs" />
     <Compile Include="Patches\BotBrainCreateLogicNodePatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -116,12 +120,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(ProjectDir)\VersionChecker\setbuild.ps1</PreBuildEvent>
+    <PreBuildEvent>rem powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(ProjectDir)\VersionChecker\setbuild.ps1</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)\..\..\BepInEx\plugins\$(TargetFileName)"
-if $(ConfigurationName) == Package (
-  powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(ProjectDir)\package.ps1
-)</PostBuildEvent>
+    <PostBuildEvent>rem copy "$(TargetPath)" "$(ProjectDir)\..\..\BepInEx\plugins\$(TargetFileName)"
+rem if $(ConfigurationName) == Package (
+rem   powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(ProjectDir)\package.ps1
+rem )</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -1,4 +1,5 @@
-﻿using DrakiaXYZ.BigBrain.Internal;
+﻿using BepInEx.Logging;
+using DrakiaXYZ.BigBrain.Internal;
 using EFT;
 using HarmonyLib;
 using System;
@@ -36,11 +37,14 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal Dictionary<Type, int> CustomLogics = new Dictionary<Type, int>();
         internal List<Type> CustomLogicList = new List<Type>();
         internal List<ExcludeLayerInfo> ExcludeLayers = new List<ExcludeLayerInfo>();
+        internal Dictionary<IPlayer, BotOwner> ActivatedBots = new Dictionary<IPlayer, BotOwner>();
+        internal List<ExcludedLayerInfo> ExcludedLayers = new List<ExcludedLayerInfo>();
 
         // Allow modders to access read-only collections of the brain layers added/removed and custom logics used by bots
         public static IReadOnlyDictionary<int, LayerInfo> CustomLayersReadOnly => Instance.CustomLayers.ToDictionary(i => i.Key, i => i.Value);
         public static IReadOnlyDictionary<Type, int> CustomLogicsReadOnly => Instance.CustomLogics.ToDictionary(i => i.Key, i => i.Value);
         public static IReadOnlyList<ExcludeLayerInfo> ExcludeLayersReadOnly => Instance.ExcludeLayers.AsReadOnly();
+        public static int ExcludedLayerCount => Instance.ExcludeLayers.Count;
 
         private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyAbstractClass<>));
 
@@ -53,7 +57,7 @@ namespace DrakiaXYZ.BigBrain.Brains
             public int customLayerPriority { get; private set; }
             public int customLayerId { get; private set; }
 
-            private List<string> _customLayerBrains;
+            internal List<string> _customLayerBrains;
 
             public IReadOnlyList<string> CustomLayerBrains => _customLayerBrains.AsReadOnly();
 
@@ -70,7 +74,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         {
             public string excludeLayerName { get; private set; }
 
-            private List<string> _excludeLayerBrains;
+            internal List<string> _excludeLayerBrains;
 
             public IReadOnlyList<string> ExcludeLayerBrains => _excludeLayerBrains.AsReadOnly();
 
@@ -78,6 +82,25 @@ namespace DrakiaXYZ.BigBrain.Brains
             {
                 _excludeLayerBrains = brains;
                 excludeLayerName = layerName;
+            }
+        }
+
+        internal class ExcludedLayerInfo
+        {
+            public BotOwner BotOwner { get; private set; }
+            public AICoreLogicLayerClass Layer { get; private set; }
+            public string BrainName { get; private set; }
+            public string LayerName { get; private set; }
+            public int Index { get; private set; }
+
+            public ExcludedLayerInfo(BotOwner botOwner, AICoreLogicLayerClass layer, string brainName, int index)
+            {
+                BotOwner = botOwner;
+                Layer = layer;
+                BrainName = brainName;
+                Index = index;
+
+                LayerName = layer.Name();
             }
         }
 
@@ -105,12 +128,77 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames)
         {
-            Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
+            if (!Instance.ExcludeLayers.Any(x => x.excludeLayerName == layerName))
+            {
+                Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
+            }
+            else
+            {
+                ExcludeLayerInfo matchingExcludeLayerInfo = Instance.ExcludeLayers.Single(x => x.excludeLayerName == layerName);
+                IEnumerable<string> additionalBrainNames = brainNames.Where(x => !matchingExcludeLayerInfo._excludeLayerBrains.Contains(x));
+
+                matchingExcludeLayerInfo._excludeLayerBrains.AddRange(brainNames);
+            }
+
+            foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
+            {
+                if ((botOwner == null) || botOwner.IsDead)
+                {
+                    continue;
+                }
+
+                botOwner.RemoveAllExcludedLayers();
+            }
         }
 
         public static void RemoveLayers(List<string> layerNames, List<string> brainNames)
         {
             layerNames.ForEach(layerName => RemoveLayer(layerName, brainNames));
+        }
+
+        public static void RestoreLayer(string layerName, List<string> brainNames)
+        {
+            List<ExcludeLayerInfo> excludeLayerInfosToRemove = new List<ExcludeLayerInfo>();
+
+            foreach (ExcludeLayerInfo excludeLayer in Instance.ExcludeLayers)
+            {
+                if (excludeLayer.excludeLayerName != layerName)
+                {
+                    continue;
+                }
+
+                excludeLayer._excludeLayerBrains.RemoveAll(x => brainNames.Contains(x));
+
+                if (excludeLayer._excludeLayerBrains.Count == 0)
+                {
+                    excludeLayerInfosToRemove.Add(excludeLayer);
+                }
+            }
+
+            foreach (ExcludeLayerInfo excludeLayerInfoToRemove in excludeLayerInfosToRemove)
+            {
+                Instance.ExcludeLayers.Remove(excludeLayerInfoToRemove);
+            }
+
+            foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
+            {
+                if ((botOwner == null) || botOwner.IsDead)
+                {
+                    continue;
+                }
+
+                if (!brainNames.Contains(botOwner.Brain.BaseBrain.ShortName()))
+                {
+                    continue;
+                }
+
+                botOwner.RestoreLayer(layerName);
+            }
+        }
+
+        public static void RestoreLayers(List<string> layerNames, List<string> brainNames)
+        {
+            layerNames.ForEach(layerName => RestoreLayer(layerName, brainNames));
         }
 
         public static bool IsCustomLayerActive(BotOwner botOwner)

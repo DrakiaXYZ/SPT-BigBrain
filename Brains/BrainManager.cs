@@ -128,18 +128,33 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames)
         {
-            if (!Instance.ExcludeLayers.Any(x => x.excludeLayerName == layerName))
+            ExcludeLayerInfo matchingExcludeLayerInfo = null;
+
+            // Add new brain names to an existing ExcludeLayerInfo if one exists
+            foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
             {
-                Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames));
-            }
-            else
-            {
-                ExcludeLayerInfo matchingExcludeLayerInfo = Instance.ExcludeLayers.Single(x => x.excludeLayerName == layerName);
+                if (excludeLayerInfo.excludeLayerName != layerName)
+                {
+                    continue;
+                }
+
+                matchingExcludeLayerInfo = excludeLayerInfo;
+
+                // Ensure duplicate brain names are not added
                 IEnumerable<string> additionalBrainNames = brainNames.Where(x => !matchingExcludeLayerInfo._excludeLayerBrains.Contains(x));
+                matchingExcludeLayerInfo._excludeLayerBrains.AddRange(additionalBrainNames);
 
-                matchingExcludeLayerInfo._excludeLayerBrains.AddRange(brainNames);
+                break;
             }
 
+            // If a matching ExcludeLayerInfo wasn't found, create a new one
+            if (matchingExcludeLayerInfo == null)
+            {
+                matchingExcludeLayerInfo = new ExcludeLayerInfo(layerName, brainNames);
+                Instance.ExcludeLayers.Add(matchingExcludeLayerInfo);
+            }
+
+            // Remove the layer for all bots that have already spawned
             foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
             {
                 if ((botOwner == null) || botOwner.IsDead)
@@ -147,7 +162,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                botOwner.RemoveAllExcludedLayers();
+                botOwner.RemoveLayerForBot(matchingExcludeLayerInfo);
             }
         }
 
@@ -160,6 +175,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         {
             List<ExcludeLayerInfo> excludeLayerInfosToRemove = new List<ExcludeLayerInfo>();
 
+            // Remove the combination of layer name and brain name(s) from ExcludeLayers to ensure they aren't removed from bots that haven't spawned yet
             foreach (ExcludeLayerInfo excludeLayer in Instance.ExcludeLayers)
             {
                 if (excludeLayer.excludeLayerName != layerName)
@@ -175,11 +191,13 @@ namespace DrakiaXYZ.BigBrain.Brains
                 }
             }
 
+            // If all brain names have been removed from a ExcludeLayer entry, remove it from the list
             foreach (ExcludeLayerInfo excludeLayerInfoToRemove in excludeLayerInfosToRemove)
             {
                 Instance.ExcludeLayers.Remove(excludeLayerInfoToRemove);
             }
 
+            // Restore the layer for all applicable bots that have already spawned
             foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
             {
                 if ((botOwner == null) || botOwner.IsDead)
@@ -192,7 +210,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                botOwner.RestoreLayer(layerName);
+                botOwner.RestoreLayerForBot(layerName);
             }
         }
 

@@ -17,7 +17,7 @@ namespace DrakiaXYZ.BigBrain.Internal
     {
         private static FieldInfo _layerDictionary = null;
 
-        internal static Dictionary<int, AICoreLogicLayerClass> GetBrainLayerDictionary(this object brain)
+        public static Dictionary<int, AICoreLogicLayerClass> GetBrainLayerDictionary(this BaseBrain brain)
         {
             if (_layerDictionary == null)
             {
@@ -34,18 +34,26 @@ namespace DrakiaXYZ.BigBrain.Internal
         {
             foreach (BrainManager.ExcludeLayerInfo excludeLayer in BrainManager.Instance.ExcludeLayers)
             {
-                if (!excludeLayer.ExcludeLayerBrains.Contains(botOwner.Brain.BaseBrain.ShortName()))
-                {
-                    continue;
-                }
-
-                botOwner.RemoveLayer(excludeLayer.excludeLayerName);
+                botOwner.RemoveLayerForBot(excludeLayer);
             }
         }
 
-        internal static void RemoveLayer(this BotOwner botOwner, string layerName)
+        internal static void RemoveLayerForBot(this BotOwner botOwner, BrainManager.ExcludeLayerInfo excludeLayer)
         {
+            // Only remove the layer if ExcludeLayer contains the bot's brain name
+            if (!excludeLayer.ExcludeLayerBrains.Contains(botOwner.Brain.BaseBrain.ShortName()))
+            {
+                return;
+            }
+
+            botOwner.RemoveLayerForBot(excludeLayer.excludeLayerName);
+        }
+
+        internal static void RemoveLayerForBot(this BotOwner botOwner, string layerName)
+        {
+            // Get all brain layers the bot currently has
             Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.GetBrainLayerDictionary();
+
             int layerIndexToRemove = -1;
 
             foreach (int index in botBrainLayerDictionary.Keys)
@@ -55,29 +63,34 @@ namespace DrakiaXYZ.BigBrain.Internal
                     continue;
                 }
 
-                Logger.CreateLogSource("BIGBRAIN").LogInfo("Removing " + layerName + " from " + botOwner.name + " (" + botOwner.Brain.BaseBrain.ShortName() + ", " + botOwner.Profile.Info.Settings.Role + ")");
-
+                // Remove the brain layer from the bot's brain
+                layerIndexToRemove = index;
                 botOwner.Brain.BaseBrain.method_3(index);
-
+                
+                // Ensure there is no longer a brain layer of the same type in the bot's brain
                 if (botOwner.Brain.BaseBrain.method_2(botBrainLayerDictionary[index]))
                 {
                     throw new InvalidOperationException($"Could not remove brain layer '{layerName}' from {botOwner.name}");
                 }
 
+                // Cache the removed layer so it can be restored later if needed
                 BrainManager.Instance.ExcludedLayers.Add(new BrainManager.ExcludedLayerInfo(botOwner, botBrainLayerDictionary[index], botOwner.Brain.BaseBrain.ShortName(), index));
-                layerIndexToRemove = index;
+                
                 break;
             }
 
+            // If a matching layer was found, remove it from the bot's brain-layer dictionary. This is not done in method_3.
             if (layerIndexToRemove > -1)
             {
                 botBrainLayerDictionary.Remove(layerIndexToRemove);
             }
         }
 
-        internal static void RestoreLayer(this BotOwner botOwner, string layerName)
+        internal static void RestoreLayerForBot(this BotOwner botOwner, string layerName)
         {
+            // Get all brain layers the bot currently has
             Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.GetBrainLayerDictionary();
+
             List<BrainManager.ExcludedLayerInfo> restoredLayers = new List<BrainManager.ExcludedLayerInfo>();
 
             foreach (BrainManager.ExcludedLayerInfo excludedLayer in BrainManager.Instance.ExcludedLayers)
@@ -87,13 +100,13 @@ namespace DrakiaXYZ.BigBrain.Internal
                     continue;
                 }
 
-                Logger.CreateLogSource("BIGBRAIN").LogInfo("Restoring " + layerName + " to " + botOwner.name + " (" + botOwner.Brain.BaseBrain.ShortName() + ", " + botOwner.Profile.Info.Settings.Role + ")");
-
+                // Ensure the brain-layer index doesn't already exist in the bot's brain
                 if (botBrainLayerDictionary.ContainsKey(excludedLayer.Index))
                 {
                     throw new InvalidOperationException($"Cannot restore '{excludedLayer.LayerName}' for {botOwner.name}. Index already exists in bot brain.");
                 }
 
+                // Add the brain layer back to the bot's brain
                 if (!botOwner.Brain.BaseBrain.method_0(excludedLayer.Index, excludedLayer.Layer, true))
                 {
                     throw new InvalidOperationException($"Cannot restore '{excludedLayer.LayerName}' for {botOwner.name}. Failed to add layer.");
@@ -102,6 +115,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 restoredLayers.Add(excludedLayer);
             }
 
+            // After a brain layer has been restored, the cached version of it can be removed
             foreach (BrainManager.ExcludedLayerInfo restoredLayer in restoredLayers)
             {
                 BrainManager.Instance.ExcludedLayers.Remove(restoredLayer);

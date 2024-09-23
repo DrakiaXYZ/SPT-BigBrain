@@ -113,6 +113,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         {
             BotOwner botOwner = (BotOwner)_ownerField.GetValue(__instance);
 
+            // If the bot already exists in the dictionary, all initial setup is already done
             if (BrainManager.Instance.ActivatedBots.ContainsKey(botOwner.GetPlayer))
             {
                 return;

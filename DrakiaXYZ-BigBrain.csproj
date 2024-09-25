@@ -110,6 +110,7 @@
     <Compile Include="Patches\BotBaseBrainActivatePatch.cs" />
     <Compile Include="Patches\BotBaseBrainUpdatePatch.cs" />
     <Compile Include="Patches\BotBrainCreateLogicNodePatch.cs" />
+    <Compile Include="Patches\BotStandartBotBrainActivatePatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VersionChecker\TarkovVersion.cs" />

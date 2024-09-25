@@ -27,6 +27,8 @@ namespace DrakiaXYZ.BigBrain
                 new BotAgentUpdatePatch().Enable();
 
                 new BotBaseBrainActivateLayerPatch().Enable();
+
+                new BotStandartBotBrainActivatePatch().Enable();
             }
             catch (Exception ex)
             {

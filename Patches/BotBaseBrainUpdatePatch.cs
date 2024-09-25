@@ -8,7 +8,6 @@ using System.Reflection;
 
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
-using DrakiaXYZ.BigBrain.Brains;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {
@@ -101,37 +100,6 @@ namespace DrakiaXYZ.BigBrain.Patches
             {
                 BotOwner owner = _ownerField.GetValue(__instance) as BotOwner;
                 Logger.LogError($"Exception in ShallUseNow for {owner.Profile.Nickname} ({owner.name})");
-
-                Logger.LogError(ex);
-                throw ex;
-            }
-#endif
-        }
-
-        [PatchPostfix]
-        public static void PatchPostfix(object __instance)
-        {
-            BotOwner botOwner = (BotOwner)_ownerField.GetValue(__instance);
-
-            // If the bot already exists in the dictionary, all initial setup is already done
-            if (BrainManager.Instance.ActivatedBots.ContainsKey(botOwner.GetPlayer))
-            {
-                return;
-            }
-
-            BrainManager.Instance.ActivatedBots.Add(botOwner.GetPlayer, botOwner);
-            botOwner.GetPlayer.OnPlayerDeadOrUnspawn += (player) => { BrainManager.Instance.ActivatedBots.Remove(player); };
-
-#if DEBUG
-            try
-            {
-#endif
-                botOwner.RemoveAllExcludedLayers();
-#if DEBUG
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Could not remove excluded layers for {botOwner.Profile.Nickname} ({botOwner.name})");
 
                 Logger.LogError(ex);
                 throw ex;

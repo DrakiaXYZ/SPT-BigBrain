@@ -5,7 +5,7 @@ using System;
 
 namespace DrakiaXYZ.BigBrain
 {
-    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.0.1")]
+    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.1.0")]
     [BepInDependency("com.SPT.core", "3.9.0")]
     internal class BigBrainPlugin : BaseUnityPlugin
     {
@@ -27,7 +27,8 @@ namespace DrakiaXYZ.BigBrain
                 new BotAgentUpdatePatch().Enable();
 
                 new BotBaseBrainActivateLayerPatch().Enable();
-                new BotBaseBrainAddLayerPatch().Enable();
+
+                new BotStandartBotBrainActivatePatch().Enable();
             }
             catch (Exception ex)
             {

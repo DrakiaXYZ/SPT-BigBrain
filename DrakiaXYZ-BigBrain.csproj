@@ -101,6 +101,7 @@
     <Compile Include="Brains\CustomBrain.cs" />
     <Compile Include="Brains\CustomLayer.cs" />
     <Compile Include="Brains\CustomLogic.cs" />
+    <Compile Include="Internal\AbstractLayerInfo.cs" />
     <Compile Include="Internal\BrainHelpers.cs" />
     <Compile Include="Internal\CustomLayerWrapper.cs" />
     <Compile Include="Internal\CustomLogicWrapper.cs" />

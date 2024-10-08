@@ -41,7 +41,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 
                 foreach (BrainManager.LayerInfo layerInfo in BrainManager.Instance.CustomLayers.Values)
                 {
-                    if (!layerInfo.CustomLayerBrains.Contains(botBrain.ShortName()) || !layerInfo.CustomLayerRoles.Contains(botOwner.Profile.Info.Settings.Role))
+                    if (!layerInfo.AffectsBot(botOwner))
                     {
                         continue;
                     }

@@ -40,17 +40,10 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         internal static void RemoveLayerForBot(this BotOwner botOwner, BrainManager.ExcludeLayerInfo excludeLayer)
         {
-            // Only remove the layer if ExcludeLayer contains the bot's brain name
-            if (!excludeLayer.ExcludeLayerBrains.Contains(botOwner.Brain.BaseBrain.ShortName()))
+            if (!excludeLayer.AffectsBot(botOwner))
             {
                 return;
-            }
-
-            // Only remove the layer if ExcludeLayer contains the bot's WildSpawnType
-            if (!excludeLayer.ExcludeLayerRoles.Contains(botOwner.Profile.Info.Settings.Role))
-            {
-                return;
-            }
+            }    
 
             botOwner.RemoveLayerForBot(excludeLayer.excludeLayerName);
         }

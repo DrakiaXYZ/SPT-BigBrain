@@ -31,9 +31,24 @@ namespace DrakiaXYZ.BigBrain.Brains
             }
         }
 
-        private static int _currentLayerId = START_LAYER_ID;
         private static List<WildSpawnType> _allWildSpawnTypes;
+        internal static List<WildSpawnType> AllWildSpawnTypes
+        {
+            get
+            {
+                if (_allWildSpawnTypes == null)
+                {
+                    _allWildSpawnTypes = Enum.GetValues(typeof(WildSpawnType))
+                        .Cast<WildSpawnType>()
+                        .ToList();
+                }
 
+                return _allWildSpawnTypes;
+            }
+        }
+
+        private static int _currentLayerId = START_LAYER_ID;
+        
         internal Dictionary<int, LayerInfo> CustomLayers = new Dictionary<int, LayerInfo>();
         internal Dictionary<Type, int> CustomLogics = new Dictionary<Type, int>();
         internal List<Type> CustomLogicList = new List<Type>();
@@ -50,66 +65,53 @@ namespace DrakiaXYZ.BigBrain.Brains
         private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyAbstractClass<>));
 
         // Hide the constructor so we can have this as a guaranteed singleton
-        private BrainManager()
-        {
-            _allWildSpawnTypes = Enum.GetValues(typeof(WildSpawnType))
-                .Cast<WildSpawnType>()
-                .ToList();
-        }
+        private BrainManager() { }
 
-        public class LayerInfo
+        public class LayerInfo : AbstractLayerInfo
         {
             public Type customLayerType { get; private set; }
             public int customLayerPriority { get; private set; }
             public int customLayerId { get; private set; }
 
-            internal List<string> affectedBrainNames;
-            internal List<WildSpawnType> affectedRoles;
-
             public IReadOnlyList<string> CustomLayerBrains => affectedBrainNames.AsReadOnly();
             public IReadOnlyList<WildSpawnType> CustomLayerRoles => affectedRoles.AsReadOnly();
 
-            public LayerInfo(Type layerType, List<string> layerBrains, int layerPriority, int layerId, List<WildSpawnType> roles = null)
+            public LayerInfo(Type layerType, List<string> layerBrains, int layerPriority, int layerId)
             {
                 customLayerType = layerType;
                 affectedBrainNames = layerBrains;
                 customLayerPriority = layerPriority;
                 customLayerId = layerId;
 
-                if (roles == null)
-                {
-                    affectedRoles = _allWildSpawnTypes;
-                }
-                else
-                {
-                    affectedRoles = roles;
-                }
+                affectedRoles = AllWildSpawnTypes;
+            }
+
+            public LayerInfo(Type layerType, List<string> layerBrains, int layerPriority, int layerId, List<WildSpawnType> roles)
+                : this(layerType, layerBrains, layerPriority, layerId)
+            {
+                affectedRoles = roles;
             }
         }
 
-        public class ExcludeLayerInfo
+        public class ExcludeLayerInfo : AbstractLayerInfo
         {
             public string excludeLayerName { get; private set; }
-
-            internal List<string> affectedBrainNames;
-            internal List<WildSpawnType> affectedRoles;
 
             public IReadOnlyList<string> ExcludeLayerBrains => affectedBrainNames.AsReadOnly();
             public IReadOnlyList<WildSpawnType> ExcludeLayerRoles => affectedRoles.AsReadOnly();
 
-            public ExcludeLayerInfo(string layerName, List<string> brains, List<WildSpawnType> roles = null)
+            public ExcludeLayerInfo(string layerName, List<string> brains)
             {
                 affectedBrainNames = brains;
                 excludeLayerName = layerName;
 
-                if (roles == null)
-                {
-                    affectedRoles = _allWildSpawnTypes;
-                }
-                else
-                {
-                    affectedRoles = roles;
-                }
+                affectedRoles = AllWildSpawnTypes;
+            }
+
+            public ExcludeLayerInfo(string layerName, List<string> brains, List<WildSpawnType> roles)
+                : this(layerName, brains)
+            {
+                affectedRoles = roles;
             }
         }
 
@@ -153,7 +155,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static int AddCustomLayer(Type customLayerType, List<string> brainNames, int customLayerPriority)
         {
-            return AddCustomLayer(customLayerType, brainNames, customLayerPriority, null);
+            return AddCustomLayer(customLayerType, brainNames, customLayerPriority, AllWildSpawnTypes);
         }
 
         public static void AddCustomLayers(List<Type> customLayerTypes, List<string> brainNames, int customLayerPriority, List<WildSpawnType> roles)
@@ -163,7 +165,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void AddCustomLayers(List<Type> customLayerTypes, List<string> brainNames, int customLayerPriority)
         {
-            customLayerTypes.ForEach(customLayerType => AddCustomLayer(customLayerType, brainNames, customLayerPriority, null));
+            customLayerTypes.ForEach(customLayerType => AddCustomLayer(customLayerType, brainNames, customLayerPriority, AllWildSpawnTypes));
         }
 
         public static void RemoveLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
@@ -178,7 +180,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                if (roles?.SequenceEqual(excludeLayerInfo.ExcludeLayerRoles) == false)
+                if (!roles.SequenceEqual(excludeLayerInfo.ExcludeLayerRoles))
                 {
                     continue;
                 }
@@ -213,7 +215,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames)
         {
-            RemoveLayer(layerName, brainNames, null);
+            RemoveLayer(layerName, brainNames, AllWildSpawnTypes);
         }
 
         public static void RemoveLayers(List<string> layerNames, List<string> brainNames, List<WildSpawnType> roles)
@@ -223,7 +225,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayers(List<string> layerNames, List<string> brainNames)
         {
-            layerNames.ForEach(layerName => RemoveLayer(layerName, brainNames, null));
+            layerNames.ForEach(layerName => RemoveLayer(layerName, brainNames, AllWildSpawnTypes));
         }
 
         public static void RestoreLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
@@ -238,7 +240,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                if (roles?.SequenceEqual(excludeLayerInfo.ExcludeLayerRoles) == false)
+                if (!roles.SequenceEqual(excludeLayerInfo.ExcludeLayerRoles))
                 {
                     continue;
                 }
@@ -265,12 +267,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                if (!brainNames.Contains(botOwner.Brain.BaseBrain.ShortName()))
-                {
-                    continue;
-                }
-
-                if (roles != null && !roles.Contains(botOwner.Profile.Info.Settings.Role))
+                if (!AbstractLayerInfo.DoLayerInfoSettingsAffectBot(botOwner, brainNames, roles))
                 {
                     continue;
                 }
@@ -281,7 +278,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RestoreLayer(string layerName, List<string> brainNames)
         {
-            RestoreLayer(layerName, brainNames, null);
+            RestoreLayer(layerName, brainNames, AllWildSpawnTypes);
         }
 
         public static void RestoreLayers(List<string> layerNames, List<string> brainNames, List<WildSpawnType> roles)
@@ -291,7 +288,7 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RestoreLayers(List<string> layerNames, List<string> brainNames)
         {
-            layerNames.ForEach(layerName => RestoreLayer(layerName, brainNames, null));
+            layerNames.ForEach(layerName => RestoreLayer(layerName, brainNames, AllWildSpawnTypes));
         }
 
         public static bool IsCustomLayerActive(BotOwner botOwner)

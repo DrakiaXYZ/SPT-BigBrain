@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -17,6 +18,21 @@ namespace DrakiaXYZ.BigBrain
         {
             return AccessTools.GetDeclaredProperties(classType).FirstOrDefault(
                 x => propertyType.IsAssignableFrom(x.PropertyType) || (x.PropertyType.IsGenericType && propertyType.IsGenericType && propertyType.GetGenericTypeDefinition().IsAssignableFrom(x.PropertyType.GetGenericTypeDefinition())))?.Name;
+        }
+
+        public static bool HasSameContents<T>(IEnumerable<T> collection1, IEnumerable<T> collection2)
+        {
+            if (collection1.Count() != collection2.Count())
+            {
+                return false;
+            }
+
+            if (collection1.Any(item => !collection2.Contains(item)))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

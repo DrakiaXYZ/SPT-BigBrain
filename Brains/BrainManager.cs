@@ -170,9 +170,12 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            ExcludeLayerInfo matchingExcludeLayerInfo = null;
+            if (!BrainHelpers.CheckIfExcludeLayerInfosMustSplit(layerName, brainNames, roles))
+            {
+                Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames, roles));
+            }
+            BrainHelpers.RemoveDuplicateExcludeLayerInfos();
 
-            // Add new brain names to an existing ExcludeLayerInfo if one exists
             foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
             {
                 if (excludeLayerInfo.excludeLayerName != layerName)
@@ -180,36 +183,28 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                if (!roles.SequenceEqual(excludeLayerInfo.ExcludeLayerRoles))
+                IEnumerable<string> matchingBrainNames = brainNames.Intersect(excludeLayerInfo.ExcludeLayerBrains);
+                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerBrains, matchingBrainNames))
                 {
                     continue;
                 }
 
-                matchingExcludeLayerInfo = excludeLayerInfo;
-
-                // Ensure duplicate brain names are not added
-                IEnumerable<string> additionalBrainNames = brainNames.Where(x => !matchingExcludeLayerInfo.affectedBrainNames.Contains(x));
-                matchingExcludeLayerInfo.affectedBrainNames.AddRange(additionalBrainNames);
-
-                break;
-            }
-
-            // If a matching ExcludeLayerInfo wasn't found, create a new one
-            if (matchingExcludeLayerInfo == null)
-            {
-                matchingExcludeLayerInfo = new ExcludeLayerInfo(layerName, brainNames, roles);
-                Instance.ExcludeLayers.Add(matchingExcludeLayerInfo);
-            }
-
-            // Remove the layer for all bots that have already spawned
-            foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
-            {
-                if ((botOwner == null) || botOwner.IsDead)
+                IEnumerable<WildSpawnType> matchingRoles = roles.Intersect(excludeLayerInfo.ExcludeLayerRoles);
+                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerRoles, matchingRoles))
                 {
                     continue;
                 }
 
-                botOwner.RemoveLayerForBot(matchingExcludeLayerInfo);
+                // Remove the layer for all bots that have already spawned
+                foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
+                {
+                    if ((botOwner == null) || botOwner.IsDead)
+                    {
+                        continue;
+                    }
+
+                    botOwner.RemoveLayerForBot(excludeLayerInfo);
+                }
             }
         }
 
@@ -230,9 +225,11 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RestoreLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
+            BrainHelpers.CheckIfExcludeLayerInfosMustSplit(layerName, brainNames, roles);
+            BrainHelpers.RemoveDuplicateExcludeLayerInfos();
+
             List<ExcludeLayerInfo> excludeLayerInfosToRemove = new List<ExcludeLayerInfo>();
 
-            // Remove the combination of layer name and brain name(s) from ExcludeLayers to ensure they aren't removed from bots that haven't spawned yet
             foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
             {
                 if (excludeLayerInfo.excludeLayerName != layerName)
@@ -240,17 +237,19 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                if (!roles.SequenceEqual(excludeLayerInfo.ExcludeLayerRoles))
+                IEnumerable<string> matchingBrainNames = brainNames.Intersect(excludeLayerInfo.ExcludeLayerBrains);
+                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerBrains, matchingBrainNames))
                 {
                     continue;
                 }
 
-                excludeLayerInfo.affectedBrainNames.RemoveAll(x => brainNames.Contains(x));
-
-                if (excludeLayerInfo.affectedBrainNames.Count == 0)
+                IEnumerable<WildSpawnType> matchingRoles = roles.Intersect(excludeLayerInfo.ExcludeLayerRoles);
+                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerRoles, matchingRoles))
                 {
-                    excludeLayerInfosToRemove.Add(excludeLayerInfo);
+                    continue;
                 }
+
+                excludeLayerInfosToRemove.Add(excludeLayerInfo);
             }
 
             // If all brain names have been removed from a ExcludeLayer entry, remove it from the list

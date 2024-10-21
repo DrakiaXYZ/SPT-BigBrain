@@ -48,7 +48,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 
                     CustomLayerWrapper customLayerWrapper = new CustomLayerWrapper(layerInfo.customLayerType, botOwner, layerInfo.customLayerPriority);
 #if DEBUG
-                    Logger.LogInfo($"  Injecting {customLayerWrapper.Name()}({layerInfo.customLayerId}) with priority {layerInfo.customLayerPriority}");
+                    Logger.LogDebug($"  Injecting {customLayerWrapper.Name()}({layerInfo.customLayerId}) with priority {layerInfo.customLayerPriority}");
 #endif
                     _addLayerMethod.Invoke(botBrain, new object[] { layerInfo.customLayerId, customLayerWrapper, true });
                 }

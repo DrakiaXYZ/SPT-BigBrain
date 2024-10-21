@@ -170,32 +170,11 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            if (!BrainHelpers.CheckIfExcludeLayerInfosMustSplit(layerName, brainNames, roles))
+            ExcludeLayerInfoHelpers.SplitOrAddForSettings(layerName, brainNames, roles);
+
+            // Remove the layer for all bots that have already spawned
+            foreach (ExcludeLayerInfo excludeLayerInfo in ExcludeLayerInfoHelpers.FindAllExcludeLayerInfosWithSettings(layerName, brainNames, roles))
             {
-                Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames, roles));
-            }
-            BrainHelpers.RemoveDuplicateExcludeLayerInfos();
-
-            foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
-            {
-                if (excludeLayerInfo.excludeLayerName != layerName)
-                {
-                    continue;
-                }
-
-                IEnumerable<string> matchingBrainNames = brainNames.Intersect(excludeLayerInfo.ExcludeLayerBrains);
-                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerBrains, matchingBrainNames))
-                {
-                    continue;
-                }
-
-                IEnumerable<WildSpawnType> matchingRoles = roles.Intersect(excludeLayerInfo.ExcludeLayerRoles);
-                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerRoles, matchingRoles))
-                {
-                    continue;
-                }
-
-                // Remove the layer for all bots that have already spawned
                 foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
                 {
                     if ((botOwner == null) || botOwner.IsDead)
@@ -225,37 +204,15 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RestoreLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            BrainHelpers.CheckIfExcludeLayerInfosMustSplit(layerName, brainNames, roles);
-            BrainHelpers.RemoveDuplicateExcludeLayerInfos();
+            ExcludeLayerInfoHelpers.SplitOrAddForSettings(layerName, brainNames, roles);
 
-            List<ExcludeLayerInfo> excludeLayerInfosToRemove = new List<ExcludeLayerInfo>();
-
-            foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
+            // Need to create an array or we'll get a "Collection was modified" exception when removing these items
+            ExcludeLayerInfo[] excludeLayerInfosToRemove = ExcludeLayerInfoHelpers.FindAllExcludeLayerInfosWithSettings(layerName, brainNames, roles)
+                .ToArray();
+            
+            foreach (ExcludeLayerInfo excludeLayerInfo in excludeLayerInfosToRemove)
             {
-                if (excludeLayerInfo.excludeLayerName != layerName)
-                {
-                    continue;
-                }
-
-                IEnumerable<string> matchingBrainNames = brainNames.Intersect(excludeLayerInfo.ExcludeLayerBrains);
-                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerBrains, matchingBrainNames))
-                {
-                    continue;
-                }
-
-                IEnumerable<WildSpawnType> matchingRoles = roles.Intersect(excludeLayerInfo.ExcludeLayerRoles);
-                if (!Utils.HasSameContents(excludeLayerInfo.ExcludeLayerRoles, matchingRoles))
-                {
-                    continue;
-                }
-
-                excludeLayerInfosToRemove.Add(excludeLayerInfo);
-            }
-
-            // If all brain names have been removed from a ExcludeLayer entry, remove it from the list
-            foreach (ExcludeLayerInfo excludeLayerInfoToRemove in excludeLayerInfosToRemove)
-            {
-                Instance.ExcludeLayers.Remove(excludeLayerInfoToRemove);
+                Instance.ExcludeLayers.Remove(excludeLayerInfo);
             }
 
             // Restore the layer for all applicable bots that have already spawned

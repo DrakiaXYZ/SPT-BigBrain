@@ -204,15 +204,14 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RestoreLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            ExcludeLayerInfoHelpers.SplitOrAddForSettings(layerName, brainNames, roles);
+            ExcludeLayerInfoHelpers.SplitForSettings(layerName, brainNames, roles);
 
-            // Need to create an array or we'll get a "Collection was modified" exception when removing these items
-            ExcludeLayerInfo[] excludeLayerInfosToRemove = ExcludeLayerInfoHelpers.FindAllExcludeLayerInfosWithSettings(layerName, brainNames, roles)
-                .ToArray();
-            
-            foreach (ExcludeLayerInfo excludeLayerInfo in excludeLayerInfosToRemove)
+            ExcludeLayerInfo matchingExcludeLayerInfo = ExcludeLayerInfoHelpers.FindExcludeLayerInfo(layerName, brainNames, roles);
+            if (matchingExcludeLayerInfo != null)
             {
-                Instance.ExcludeLayers.Remove(excludeLayerInfo);
+                Instance.ExcludeLayers.Remove(matchingExcludeLayerInfo);
+
+                Logger.CreateLogSource("BIGBRAIN").LogInfo($"Removed exclusion for {layerName} for brains {ExcludeLayerInfoHelpers.CreateItemsText(brainNames)} and roles {ExcludeLayerInfoHelpers.CreateItemsText(roles)}");
             }
 
             // Restore the layer for all applicable bots that have already spawned

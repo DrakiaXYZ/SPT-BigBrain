@@ -1,5 +1,4 @@
 ﻿using BepInEx.Logging;
-using DrakiaXYZ.BigBrain.Brains;
 using EFT;
 using System;
 using System.Collections.Generic;
@@ -84,8 +83,8 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         internal static void SplitOrAddForSettings(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            bool layerExists = FindExcludeLayerInfo(layerName, brainNames, roles) != null;
-            if (layerExists)
+            ExcludeLayerInfo existingLayer = FindExcludeLayerInfo(layerName, brainNames, roles);
+            if (existingLayer != null)
             {
                 return;
             }
@@ -94,9 +93,9 @@ namespace DrakiaXYZ.BigBrain.Internal
             if (excludeLayersAdded == 0)
             {
                 Instance.ExcludeLayers.Add(new ExcludeLayerInfo(layerName, brainNames, roles));
-            }
 
-            RemoveDuplicates();
+                Logger.CreateLogSource("BIGBRAIN").LogWarning($"Added exclusion for {layerName} for brains {CreateItemsText(brainNames)} and roles {CreateItemsText(roles)}");
+            }
         }
 
         internal static int SplitForSettings(string layerName, List<string> newBrainNames, List<WildSpawnType> newRoles)
@@ -104,6 +103,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             int splitCount = 0;
 
             List<ExcludeLayerInfo> newExcludeLayerInfos = new List<ExcludeLayerInfo>();
+            List<ExcludeLayerInfo> obsoleteExcludeLayerInfos = new List<ExcludeLayerInfo>();
 
             foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
             {
@@ -126,7 +126,14 @@ namespace DrakiaXYZ.BigBrain.Internal
                 newExcludeLayerInfos.AddRange(newExcludeLayerInfosForBrains);
                 splitCount += newExcludeLayerInfosForBrains.Count();
 
-                break;
+                obsoleteExcludeLayerInfos.Add(excludeLayerInfo);
+
+                //break;
+            }
+
+            foreach (ExcludeLayerInfo obsoleteExcludeLayerInfo in obsoleteExcludeLayerInfos)
+            {
+                Instance.ExcludeLayers.Remove(obsoleteExcludeLayerInfo);
             }
 
             foreach (ExcludeLayerInfo newExcludeLayerInfo in newExcludeLayerInfos)
@@ -135,6 +142,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
             newExcludeLayerInfos.Clear();
+            obsoleteExcludeLayerInfos.Clear();
 
             foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
             {
@@ -157,7 +165,14 @@ namespace DrakiaXYZ.BigBrain.Internal
                 newExcludeLayerInfos.AddRange(newExcludeLayerInfosForRoles);
                 splitCount += newExcludeLayerInfosForRoles.Count();
 
-                break;
+                obsoleteExcludeLayerInfos.Add(excludeLayerInfo);
+
+                //break;
+            }
+
+            foreach (ExcludeLayerInfo obsoleteExcludeLayerInfo in obsoleteExcludeLayerInfos)
+            {
+                Instance.ExcludeLayers.Remove(obsoleteExcludeLayerInfo);
             }
 
             foreach (ExcludeLayerInfo newExcludeLayerInfo in newExcludeLayerInfos)
@@ -170,66 +185,70 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         private static IEnumerable<ExcludeLayerInfo> splitForBrains(this ExcludeLayerInfo excludeLayerInfo, string layerName, List<string> newBrainNames, List<WildSpawnType> newRoles)
         {
-            var canSplitCheck = new CollectionCanSplitCheck<string>(excludeLayerInfo.affectedBrainNames, newBrainNames);
-            if (!canSplitCheck.CanSplit)
+            var brainNamesSplitCheck = new CollectionCanSplitCheck<string>(excludeLayerInfo.affectedBrainNames, newBrainNames);
+            if (!brainNamesSplitCheck.CanSplit)
             {
                 return Enumerable.Empty<ExcludeLayerInfo>();
             }
 
-            if (FindExcludeLayerInfo(layerName, canSplitCheck.SameItems, newRoles) != null)
+            IEnumerable<IEnumerable<string>> newBrainNameGroups = brainNamesSplitCheck
+                .GetAllItemsCollections()
+                .Where(collection => FindExcludeLayerInfo(layerName, collection, newRoles) == null);
+
+            if (!newBrainNameGroups.Any())
             {
                 return Enumerable.Empty<ExcludeLayerInfo>();
             }
 
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting {excludeLayerInfo.excludeLayerName} for {string.Join(", ", newRoles)} into two brain groups:");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"1) {string.Join(", ", canSplitCheck.SameItems)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"2) {string.Join(", ", canSplitCheck.RemainingItemsOld)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"3) {string.Join(", ", canSplitCheck.RemainingItemsNew)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"New) {string.Join(", ", newBrainNames)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Old) {string.Join(", ", excludeLayerInfo.affectedBrainNames)}");
-
-            excludeLayerInfo.affectedBrainNames = canSplitCheck.SameItems.ToList();
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting {excludeLayerInfo.excludeLayerName} for {CreateItemsText(newRoles)} into brain groups:");
 
             List<ExcludeLayerInfo> newExcludeLayerInfos = new List<ExcludeLayerInfo>();
 
-            foreach (IEnumerable<string> remainingBrainNames in canSplitCheck.GetRemainingItemsCollections())
+            foreach (IEnumerable<string> brainNames in newBrainNameGroups)
             {
-                var splitLayerInfo = new ExcludeLayerInfo(excludeLayerInfo.excludeLayerName, remainingBrainNames.ToList(), newRoles);
+                var splitLayerInfo = new ExcludeLayerInfo(excludeLayerInfo.excludeLayerName, brainNames.ToList(), newRoles);
                 newExcludeLayerInfos.Add(splitLayerInfo);
+
+                Logger.CreateLogSource("BIGBRAIN").LogInfo($"-> {CreateItemsText(brainNames)}");
             }
+
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"New) {CreateItemsText(newBrainNames)}");
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Old) {CreateItemsText(excludeLayerInfo.affectedBrainNames)}");
 
             return newExcludeLayerInfos;
         }
 
         private static IEnumerable<ExcludeLayerInfo> splitForRoles(this ExcludeLayerInfo excludeLayerInfo, string layerName, List<string> newBrainNames, List<WildSpawnType> newRoles)
         {
-            var canSplitCheck = new CollectionCanSplitCheck<WildSpawnType>(excludeLayerInfo.affectedRoles, newRoles);
-            if (!canSplitCheck.CanSplit)
+            var rolesSplitCheck = new CollectionCanSplitCheck<WildSpawnType>(excludeLayerInfo.affectedRoles, newRoles);
+            if (!rolesSplitCheck.CanSplit)
             {
                 return Enumerable.Empty<ExcludeLayerInfo>();
             }
 
-            if (FindExcludeLayerInfo(layerName, newBrainNames, canSplitCheck.SameItems) != null)
+            IEnumerable<IEnumerable<WildSpawnType>> newRoleGroups = rolesSplitCheck
+                .GetAllItemsCollections()
+                .Where(collection => FindExcludeLayerInfo(layerName, newBrainNames, collection) == null);
+
+            if (!newRoleGroups.Any())
             {
                 return Enumerable.Empty<ExcludeLayerInfo>();
             }
 
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting {excludeLayerInfo.excludeLayerName} for {string.Join(", ", newBrainNames)} into two role groups:");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"1) {string.Join(", ", canSplitCheck.SameItems)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"2) {string.Join(", ", canSplitCheck.RemainingItemsOld)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"3) {string.Join(", ", canSplitCheck.RemainingItemsNew)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"New) {string.Join(", ", newRoles)}");
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Old) {string.Join(", ", excludeLayerInfo.affectedRoles)}");
-
-            excludeLayerInfo.affectedRoles = canSplitCheck.SameItems.ToList();
-
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting {excludeLayerInfo.excludeLayerName} for {CreateItemsText(newBrainNames)} into role groups:");
+            
             List<ExcludeLayerInfo> newExcludeLayerInfos = new List<ExcludeLayerInfo>();
 
-            foreach (IEnumerable<WildSpawnType> remainingRoles in canSplitCheck.GetRemainingItemsCollections())
+            foreach (IEnumerable<WildSpawnType> roles in newRoleGroups)
             {
-                var splitLayerInfo = new ExcludeLayerInfo(excludeLayerInfo.excludeLayerName, newBrainNames, remainingRoles.ToList());
+                var splitLayerInfo = new ExcludeLayerInfo(excludeLayerInfo.excludeLayerName, newBrainNames, roles.ToList());
                 newExcludeLayerInfos.Add(splitLayerInfo);
+
+                Logger.CreateLogSource("BIGBRAIN").LogInfo($"-> {CreateItemsText(roles)}");
             }
+
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"New) {CreateItemsText(newRoles)}");
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Old) {CreateItemsText(excludeLayerInfo.affectedRoles)}");
 
             return newExcludeLayerInfos;
         }
@@ -260,6 +279,8 @@ namespace DrakiaXYZ.BigBrain.Internal
                     if (excludeLayerInfo1.HasSameSettings(excludeLayerInfo2))
                     {
                         duplicateLayerInfos.Add(excludeLayerInfo2);
+
+                        Logger.CreateLogSource("BIGBRAIN").LogWarning($"Found duplicate layer for {excludeLayerInfo2.excludeLayerName} for brains {CreateItemsText(excludeLayerInfo2.affectedBrainNames)} and roles {CreateItemsText(excludeLayerInfo2.affectedRoles)}");
                     }
                 }
             }
@@ -267,11 +288,21 @@ namespace DrakiaXYZ.BigBrain.Internal
             foreach (ExcludeLayerInfo duplicateLayerInfo in duplicateLayerInfos)
             {
                 Instance.ExcludeLayers.Remove(duplicateLayerInfo);
-
-                Logger.CreateLogSource("BIGBRAIN").LogWarning($"Removed duplicate layer for {duplicateLayerInfo.excludeLayerName} for brains {string.Join(", ", duplicateLayerInfo.affectedBrainNames)} and roles {string.Join(", ", duplicateLayerInfo.affectedRoles)}");
             }
 
             return duplicateLayerInfos.Count;
+        }
+
+        internal static string CreateItemsText<T>(IEnumerable<T> items, int maxItemsToList = 10)
+        {
+            int itemCount = items.Count();
+
+            if (itemCount > maxItemsToList)
+            {
+                return $"{itemCount} {typeof(T).Name}s";
+            }
+
+            return string.Join(", ", items);
         }
     }
 }

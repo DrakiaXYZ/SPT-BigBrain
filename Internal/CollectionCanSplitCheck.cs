@@ -45,5 +45,18 @@ namespace DrakiaXYZ.BigBrain.Internal
                 yield return RemainingItemsNew;
             }
         }
+
+        public IEnumerable<IEnumerable<T>> GetAllItemsCollections()
+        {
+            if (SameItems.Any())
+            {
+                yield return SameItems;
+            }
+
+            foreach (IEnumerable<T> collection in GetRemainingItemsCollections())
+            {
+                yield return collection;
+            }
+        }
     }
 }

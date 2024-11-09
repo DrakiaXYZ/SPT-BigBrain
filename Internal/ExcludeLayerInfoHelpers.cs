@@ -36,6 +36,36 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
         }
 
+        internal static bool CanAllSettingsBeApplied(string layerName, IEnumerable<string> brainNames, IEnumerable<WildSpawnType> roles)
+        {
+            foreach (string brainName in brainNames)
+            {
+                foreach (WildSpawnType role in roles)
+                {
+                    IEnumerable<string> brainNameToCheck = brainNames.Where(n => n == brainName);
+                    IEnumerable<WildSpawnType> roleToCheck = roles.Where(n => n == role);
+
+                    bool matchingExcludeLayerInfoFound = false;
+
+                    foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
+                    {
+                        if (excludeLayerInfo.HasAllSettings(layerName, brainNameToCheck, roleToCheck))
+                        {
+                            matchingExcludeLayerInfoFound = true;
+                            break;
+                        }
+                    }
+
+                    if (!matchingExcludeLayerInfoFound)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         internal static bool IsExactMatch(this ExcludeLayerInfo excludeLayerInfo, string layerName, IEnumerable<string> exactBrainNames, IEnumerable<WildSpawnType> exactRoles)
         {
             if (excludeLayerInfo.excludeLayerName != layerName)
@@ -81,13 +111,38 @@ namespace DrakiaXYZ.BigBrain.Internal
             return true;
         }
 
+        internal static bool HasOneOrMoreOfEachSetting(this ExcludeLayerInfo excludeLayerInfo, string layerName, IEnumerable<string> brainNames, IEnumerable<WildSpawnType> roles)
+        {
+            if (excludeLayerInfo.excludeLayerName != layerName)
+            {
+                return false;
+            }
+
+            if (!excludeLayerInfo.ContainsAny(brainNames))
+            {
+                return false;
+            }
+
+            if (!excludeLayerInfo.ContainsAny(roles))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         internal static void SplitOrAddForSettings(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            ExcludeLayerInfo existingLayer = FindExcludeLayerInfo(layerName, brainNames, roles);
-            if (existingLayer != null)
+            if (FindExcludeLayerInfo(layerName, brainNames, roles) != null)
             {
                 return;
             }
+
+            /*if (CanAllSettingsBeApplied(layerName, brainNames, roles))
+            {
+                Logger.CreateLogSource("BIGBRAIN").LogInfo($"Found all ExcludeLayerInfos for {layerName} for brains {CreateItemsText(brainNames)} and roles {CreateItemsText(roles)}");
+                return;
+            }*/
 
             int excludeLayersAdded = SplitForSettings(layerName, brainNames, roles);
             if (excludeLayersAdded == 0)
@@ -127,8 +182,6 @@ namespace DrakiaXYZ.BigBrain.Internal
                 splitCount += newExcludeLayerInfosForBrains.Count();
 
                 obsoleteExcludeLayerInfos.Add(excludeLayerInfo);
-
-                //break;
             }
 
             foreach (ExcludeLayerInfo obsoleteExcludeLayerInfo in obsoleteExcludeLayerInfos)
@@ -166,8 +219,6 @@ namespace DrakiaXYZ.BigBrain.Internal
                 splitCount += newExcludeLayerInfosForRoles.Count();
 
                 obsoleteExcludeLayerInfos.Add(excludeLayerInfo);
-
-                //break;
             }
 
             foreach (ExcludeLayerInfo obsoleteExcludeLayerInfo in obsoleteExcludeLayerInfos)
@@ -200,7 +251,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 return Enumerable.Empty<ExcludeLayerInfo>();
             }
 
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting {excludeLayerInfo.excludeLayerName} for {CreateItemsText(newRoles)} into brain groups:");
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting exclusion for {excludeLayerInfo.excludeLayerName} for {CreateItemsText(newRoles)} into brain groups:");
 
             List<ExcludeLayerInfo> newExcludeLayerInfos = new List<ExcludeLayerInfo>();
 
@@ -235,7 +286,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 return Enumerable.Empty<ExcludeLayerInfo>();
             }
 
-            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting {excludeLayerInfo.excludeLayerName} for {CreateItemsText(newBrainNames)} into role groups:");
+            Logger.CreateLogSource("BIGBRAIN").LogInfo($"Splitting exclusion for {excludeLayerInfo.excludeLayerName} for {CreateItemsText(newBrainNames)} into role groups:");
             
             List<ExcludeLayerInfo> newExcludeLayerInfos = new List<ExcludeLayerInfo>();
 

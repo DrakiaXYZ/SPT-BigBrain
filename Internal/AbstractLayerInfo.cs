@@ -34,14 +34,22 @@ namespace DrakiaXYZ.BigBrain.Internal
 
         internal bool ContainsAll(IEnumerable<string> brainNames)
         {
-            IEnumerable<string> matchingBrainNames = brainNames.Intersect(affectedBrainNames);
-            return Utils.HasSameContents(affectedBrainNames, matchingBrainNames);
+            return brainNames.All(n => affectedBrainNames.Contains(n));
         }
 
         internal bool ContainsAll(IEnumerable<WildSpawnType> roles)
         {
-            IEnumerable<WildSpawnType> matchingRoles = roles.Intersect(affectedRoles);
-            return Utils.HasSameContents(affectedRoles, matchingRoles);
+            return roles.All(r => affectedRoles.Contains(r));
+        }
+
+        internal bool ContainsAny(IEnumerable<string> brainNames)
+        {
+            return brainNames.Any(n => affectedBrainNames.Contains(n));
+        }
+
+        internal bool ContainsAny(IEnumerable<WildSpawnType> roles)
+        {
+            return roles.Any(r => affectedRoles.Contains(r));
         }
     }
 }

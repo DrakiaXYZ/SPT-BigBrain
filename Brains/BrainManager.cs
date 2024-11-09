@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
+using System.Runtime.CompilerServices;
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
 
@@ -171,10 +171,16 @@ namespace DrakiaXYZ.BigBrain.Brains
         public static void RemoveLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
             ExcludeLayerInfoHelpers.SplitOrAddForSettings(layerName, brainNames, roles);
+            ExcludeLayerInfoHelpers.RemoveDuplicates();
 
             // Remove the layer for all bots that have already spawned
-            foreach (ExcludeLayerInfo excludeLayerInfo in ExcludeLayerInfoHelpers.FindAllExcludeLayerInfosWithSettings(layerName, brainNames, roles))
+            foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
             {
+                if (!excludeLayerInfo.HasOneOrMoreOfEachSetting(layerName, brainNames, roles))
+                {
+                    continue;
+                }
+
                 foreach (BotOwner botOwner in Instance.ActivatedBots.Values)
                 {
                     if ((botOwner == null) || botOwner.IsDead)
@@ -205,11 +211,22 @@ namespace DrakiaXYZ.BigBrain.Brains
         public static void RestoreLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
             ExcludeLayerInfoHelpers.SplitForSettings(layerName, brainNames, roles);
+            ExcludeLayerInfoHelpers.RemoveDuplicates();
 
-            ExcludeLayerInfo matchingExcludeLayerInfo = ExcludeLayerInfoHelpers.FindExcludeLayerInfo(layerName, brainNames, roles);
-            if (matchingExcludeLayerInfo != null)
+            //Logger.CreateLogSource("BIGBRAIN").LogInfo($"Checking to remove exclusion for {layerName} for brains {ExcludeLayerInfoHelpers.CreateItemsText(brainNames)} and roles {ExcludeLayerInfoHelpers.CreateItemsText(roles)}");
+
+            List<ExcludeLayerInfo> excludeLayerInfosToRemove = new List<ExcludeLayerInfo>();
+
+            foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
             {
-                Instance.ExcludeLayers.Remove(matchingExcludeLayerInfo);
+                if (excludeLayerInfo.HasOneOrMoreOfEachSetting(layerName, brainNames, roles))
+                {
+                    excludeLayerInfosToRemove.Add(excludeLayerInfo);
+                }
+            }
+            foreach (ExcludeLayerInfo excludeLayerInfo in excludeLayerInfosToRemove)
+            {
+                Instance.ExcludeLayers.Remove(excludeLayerInfo);
 
                 Logger.CreateLogSource("BIGBRAIN").LogInfo($"Removed exclusion for {layerName} for brains {ExcludeLayerInfoHelpers.CreateItemsText(brainNames)} and roles {ExcludeLayerInfoHelpers.CreateItemsText(roles)}");
             }

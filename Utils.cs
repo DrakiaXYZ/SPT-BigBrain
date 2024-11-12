@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +33,18 @@ namespace DrakiaXYZ.BigBrain
             }
 
             return true;
+        }
+
+        internal static string CreateCollectionText<T>(IEnumerable<T> items, int maxItemsToList = 10)
+        {
+            int itemCount = items.Count();
+
+            if (itemCount > maxItemsToList)
+            {
+                return $"{itemCount} {typeof(T).Name}s";
+            }
+
+            return string.Join(", ", items);
         }
     }
 }

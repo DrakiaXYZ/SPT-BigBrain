@@ -12,7 +12,7 @@ namespace DrakiaXYZ.BigBrain.Internal
         internal List<string> affectedBrainNames;
         internal List<WildSpawnType> affectedRoles;
 
-        internal static bool DoLayerInfoSettingsAffectBot(BotOwner botOwner, IEnumerable<string> brainNames, IEnumerable<WildSpawnType> roles)
+        internal static bool DoSettingsAffectBot(BotOwner botOwner, IEnumerable<string> brainNames, IEnumerable<WildSpawnType> roles)
         {
             if (!roles.Contains(botOwner.Profile.Info.Settings.Role))
             {
@@ -27,29 +27,12 @@ namespace DrakiaXYZ.BigBrain.Internal
             return true;
         }
 
-        internal bool AffectsBot(BotOwner botOwner)
-        {
-            return DoLayerInfoSettingsAffectBot(botOwner, affectedBrainNames, affectedRoles);
-        }
+        internal bool AffectsBot(BotOwner botOwner) => DoSettingsAffectBot(botOwner, affectedBrainNames, affectedRoles);
 
-        internal bool ContainsAll(IEnumerable<string> brainNames)
-        {
-            return brainNames.All(n => affectedBrainNames.Contains(n));
-        }
+        internal bool ContainsAll(IEnumerable<string> brainNames) => brainNames.All(name => affectedBrainNames.Contains(name));
+        internal bool ContainsAll(IEnumerable<WildSpawnType> roles) => roles.All(role => affectedRoles.Contains(role));
 
-        internal bool ContainsAll(IEnumerable<WildSpawnType> roles)
-        {
-            return roles.All(r => affectedRoles.Contains(r));
-        }
-
-        internal bool ContainsAny(IEnumerable<string> brainNames)
-        {
-            return brainNames.Any(n => affectedBrainNames.Contains(n));
-        }
-
-        internal bool ContainsAny(IEnumerable<WildSpawnType> roles)
-        {
-            return roles.Any(r => affectedRoles.Contains(r));
-        }
+        internal bool ContainsAny(IEnumerable<string> brainNames) => brainNames.Any(name => affectedBrainNames.Contains(name));
+        internal bool ContainsAny(IEnumerable<WildSpawnType> roles) => roles.Any(role => affectedRoles.Contains(role));
     }
 }

@@ -9,9 +9,12 @@ namespace DrakiaXYZ.BigBrain
     [BepInDependency("com.SPT.core", "3.9.0")]
     internal class BigBrainPlugin : BaseUnityPlugin
     {
+        internal static BepInEx.Logging.ManualLogSource BigBrainLogger { get; private set; } = new BepInEx.Logging.ManualLogSource("DrakiaXYZ-BigBrain");
+
         private void Awake()
         {
             Logger.LogInfo("Loading: DrakiaXYZ-BigBrain");
+            BigBrainLogger = Logger;
 
             if (!TarkovVersion.CheckEftVersion(Logger, Info, Config))
             {

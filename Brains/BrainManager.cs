@@ -1,12 +1,10 @@
-﻿using BepInEx.Logging;
-using DrakiaXYZ.BigBrain.Internal;
+﻿using DrakiaXYZ.BigBrain.Internal;
 using EFT;
-using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
 
@@ -170,13 +168,18 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RemoveLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            ExcludeLayerInfoHelpers.SplitOrAddForSettings(layerName, brainNames, roles);
-            ExcludeLayerInfoHelpers.RemoveDuplicates();
+            // Dynamically create ExcludeLayers as needed to match the provided settings
+            ExcludeLayerHelpers.SplitOrAddForSettings(layerName, brainNames, roles);
+
+#if DEBUG
+            // Duplicates should never be created if the above method works correctly, so this only needs to be done while debugging
+            ExcludeLayerHelpers.RemoveDuplicates();
+#endif
 
             // Remove the layer for all bots that have already spawned
-            foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
+            foreach (ExcludeLayerInfo excludeLayer in Instance.ExcludeLayers)
             {
-                if (!excludeLayerInfo.HasOneOrMoreOfEachSetting(layerName, brainNames, roles))
+                if (!excludeLayer.HasOneOrMoreOfEachSetting(layerName, brainNames, roles))
                 {
                     continue;
                 }
@@ -188,7 +191,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                         continue;
                     }
 
-                    botOwner.RemoveLayerForBot(excludeLayerInfo);
+                    botOwner.RemoveLayerForBot(excludeLayer);
                 }
             }
         }
@@ -210,25 +213,30 @@ namespace DrakiaXYZ.BigBrain.Brains
 
         public static void RestoreLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
-            ExcludeLayerInfoHelpers.SplitForSettings(layerName, brainNames, roles);
-            ExcludeLayerInfoHelpers.RemoveDuplicates();
+            // Dynamically create ExcludeLayers as needed to match the provided settings
+            ExcludeLayerHelpers.SplitForSettings(layerName, brainNames, roles);
 
-            //Logger.CreateLogSource("BIGBRAIN").LogInfo($"Checking to remove exclusion for {layerName} for brains {ExcludeLayerInfoHelpers.CreateItemsText(brainNames)} and roles {ExcludeLayerInfoHelpers.CreateItemsText(roles)}");
+#if DEBUG
+            // Duplicates should never be created if the above method works correctly, so this only needs to be done while debugging
+            ExcludeLayerHelpers.RemoveDuplicates();
+#endif
 
-            List<ExcludeLayerInfo> excludeLayerInfosToRemove = new List<ExcludeLayerInfo>();
+            List<ExcludeLayerInfo> excludeLayersToRemove = new List<ExcludeLayerInfo>();
 
-            foreach (ExcludeLayerInfo excludeLayerInfo in Instance.ExcludeLayers)
+            foreach (ExcludeLayerInfo excludeLayer in Instance.ExcludeLayers)
             {
-                if (excludeLayerInfo.HasOneOrMoreOfEachSetting(layerName, brainNames, roles))
+                if (excludeLayer.HasOneOrMoreOfEachSetting(layerName, brainNames, roles))
                 {
-                    excludeLayerInfosToRemove.Add(excludeLayerInfo);
+                    excludeLayersToRemove.Add(excludeLayer);
                 }
             }
-            foreach (ExcludeLayerInfo excludeLayerInfo in excludeLayerInfosToRemove)
+            foreach (ExcludeLayerInfo excludeLayer in excludeLayersToRemove)
             {
-                Instance.ExcludeLayers.Remove(excludeLayerInfo);
+                Instance.ExcludeLayers.Remove(excludeLayer);
 
-                Logger.CreateLogSource("BIGBRAIN").LogInfo($"Removed exclusion for {layerName} for brains {ExcludeLayerInfoHelpers.CreateItemsText(brainNames)} and roles {ExcludeLayerInfoHelpers.CreateItemsText(roles)}");
+#if DEBUG
+                BigBrainPlugin.BigBrainLogger.LogDebug($"Removed exclusion for {layerName} for brains {Utils.CreateCollectionText(brainNames)} and roles {Utils.CreateCollectionText(roles)}");
+#endif
             }
 
             // Restore the layer for all applicable bots that have already spawned
@@ -239,7 +247,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                if (!AbstractLayerInfo.DoLayerInfoSettingsAffectBot(botOwner, brainNames, roles))
+                if (!AbstractLayerInfo.DoSettingsAffectBot(botOwner, brainNames, roles))
                 {
                     continue;
                 }

@@ -96,7 +96,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                     continue;
                 }
 
-                Logger.CreateLogSource("BIGBRAIN").LogInfo("Removing " + layerName + " from " + botOwner.name + " (" + botOwner.Brain.BaseBrain.ShortName() + ", " + botOwner.Profile.Info.Settings.Role + ")");
+                BigBrainPlugin.BigBrainLogger.LogInfo($"Removing {layerName} from {botOwner.name} ({botOwner.Brain.BaseBrain.ShortName()}, {botOwner.Profile.Info.Settings.Role})");
 
                 // Remove the brain layer from the bot's brain
                 layerIndexToRemove = index;
@@ -145,7 +145,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                     continue;
                 }
 
-                Logger.CreateLogSource("BIGBRAIN").LogInfo("Restoring " + layerName + " to " + botOwner.name + " (" + botOwner.Brain.BaseBrain.ShortName() + ", " + botOwner.Profile.Info.Settings.Role + ")");
+                BigBrainPlugin.BigBrainLogger.LogInfo($"Restoring {layerName} to {botOwner.name} ({botOwner.Brain.BaseBrain.ShortName()}, {botOwner.Profile.Info.Settings.Role})");
 
                 // Ensure the brain-layer index doesn't already exist in the bot's brain
                 if (botBrainLayerDictionary.ContainsKey(excludedLayer.Index))

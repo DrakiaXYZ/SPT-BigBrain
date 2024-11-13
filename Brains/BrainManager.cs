@@ -169,12 +169,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         public static void RemoveLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
             // Dynamically create ExcludeLayers as needed to match the provided settings
-            ExcludeLayerHelpers.SplitOrAddForSettings(layerName, brainNames, roles);
-
-#if DEBUG
-            // Duplicates should never be created if the above method works correctly, so this only needs to be done while debugging
-            ExcludeLayerHelpers.RemoveDuplicates();
-#endif
+            ExcludeLayerSplitter.SplitOrAddLayersForSettings(layerName, brainNames, roles);
 
             // Remove the layer for all bots that have already spawned
             foreach (ExcludeLayerInfo excludeLayer in Instance.ExcludeLayers)
@@ -214,30 +209,9 @@ namespace DrakiaXYZ.BigBrain.Brains
         public static void RestoreLayer(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
             // Dynamically create ExcludeLayers as needed to match the provided settings
-            ExcludeLayerHelpers.SplitForSettings(layerName, brainNames, roles);
+            ExcludeLayerSplitter.SplitLayersForSettings(layerName, brainNames, roles);
 
-#if DEBUG
-            // Duplicates should never be created if the above method works correctly, so this only needs to be done while debugging
-            ExcludeLayerHelpers.RemoveDuplicates();
-#endif
-
-            List<ExcludeLayerInfo> excludeLayersToRemove = new List<ExcludeLayerInfo>();
-
-            foreach (ExcludeLayerInfo excludeLayer in Instance.ExcludeLayers)
-            {
-                if (excludeLayer.HasOneOrMoreOfEachSetting(layerName, brainNames, roles))
-                {
-                    excludeLayersToRemove.Add(excludeLayer);
-                }
-            }
-            foreach (ExcludeLayerInfo excludeLayer in excludeLayersToRemove)
-            {
-                Instance.ExcludeLayers.Remove(excludeLayer);
-
-#if DEBUG
-                BigBrainPlugin.BigBrainLogger.LogDebug($"Removed exclusion for {layerName} for brains {Utils.CreateCollectionText(brainNames)} and roles {Utils.CreateCollectionText(roles)}");
-#endif
-            }
+            Instance.ExcludeLayers.RemoveAllWithOneOrMoreOfEachSetting(layerName, brainNames, roles);
 
             // Restore the layer for all applicable bots that have already spawned
             foreach (BotOwner botOwner in Instance.ActivatedBots.Values)

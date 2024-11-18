@@ -12,6 +12,26 @@ namespace DrakiaXYZ.BigBrain.Internal
 {
     internal static class ExcludeLayerHelpers
     {
+        internal static bool IsAffectedByLayer(this BotOwner botOwner, AbstractLayerInfo layer)
+        {
+            return botOwner.IsAffectedBySettings(layer.brainNames, layer.roles);
+        }
+
+        internal static bool IsAffectedBySettings(this BotOwner botOwner, IEnumerable<string> brainNames, IEnumerable<WildSpawnType> roles)
+        {
+            if (!roles.Contains(botOwner.Profile.Info.Settings.Role))
+            {
+                return false;
+            }
+
+            if (!brainNames.Contains(botOwner.Brain.BaseBrain.ShortName()))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         internal static bool DoesLayerExist(this IEnumerable<ExcludeLayerInfo> excludeLayers, string layerName, IEnumerable<string> brainNames, IEnumerable<WildSpawnType> roles)
         {
             return excludeLayers.GetFirstMatch(layerName, brainNames, roles) != null;
@@ -55,7 +75,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 throw new ArgumentNullException(nameof(excludeLayer2));
             }
 
-            return excludeLayer1.HasSameSettings(excludeLayer2.excludeLayerName, excludeLayer2.affectedBrainNames, excludeLayer2.affectedRoles);
+            return excludeLayer1.HasSameSettings(excludeLayer2.excludeLayerName, excludeLayer2.brainNames, excludeLayer2.roles);
         }
 
         internal static bool HasSameSettings(this ExcludeLayerInfo excludeLayer, string layerName, IEnumerable<string> brainNames, IEnumerable<WildSpawnType> roles)
@@ -70,12 +90,12 @@ namespace DrakiaXYZ.BigBrain.Internal
                 return false;
             }
 
-            if (!Utils.HasSameContents(excludeLayer.affectedRoles, roles))
+            if (!Utils.HasSameContents(excludeLayer.roles, roles))
             {
                 return false;
             }
 
-            if (!Utils.HasSameContents(excludeLayer.affectedBrainNames, brainNames))
+            if (!Utils.HasSameContents(excludeLayer.brainNames, brainNames))
             {
                 return false;
             }
@@ -140,7 +160,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 excludeLayers.Remove(excludeLayer);
 
 #if DEBUG
-                BigBrainPlugin.BigBrainLogger.LogInfo($"Removed exclusion for {layerName} for brains {Utils.CreateCollectionText(excludeLayer.affectedBrainNames)} and roles {Utils.CreateCollectionText(excludeLayer.affectedRoles)}");
+                BigBrainPlugin.BigBrainLogger.LogDebug($"Removed exclusion for {layerName} for brains {Utils.CreateCollectionText(excludeLayer.brainNames)} and roles {Utils.CreateCollectionText(excludeLayer.roles)}");
 #endif
             }
         }
@@ -195,11 +215,26 @@ namespace DrakiaXYZ.BigBrain.Internal
                 excludeLayers.Remove(duplicateLayer);
 
 #if DEBUG
-                BigBrainPlugin.BigBrainLogger.LogInfo($"Removed duplicate layer for {duplicateLayer.excludeLayerName} for brains {Utils.CreateCollectionText(duplicateLayer.affectedBrainNames)} and roles {Utils.CreateCollectionText(duplicateLayer.affectedRoles)}");
+                BigBrainPlugin.BigBrainLogger.LogDebug($"Removed duplicate layer for {duplicateLayer.excludeLayerName} for brains {Utils.CreateCollectionText(duplicateLayer.brainNames)} and roles {Utils.CreateCollectionText(duplicateLayer.roles)}");
 #endif
             }
 
             return duplicateLayers.Count;
+        }
+
+        internal static void WriteAllToConsole(this IList<ExcludeLayerInfo> excludeLayers, Predicate<ExcludeLayerInfo> filter = null)
+        {
+            BigBrainPlugin.BigBrainLogger.LogInfo("Current exclude layers:");
+
+            foreach (ExcludeLayerInfo excludeLayer in excludeLayers)
+            {
+                if (filter != null && !filter(excludeLayer))
+                {
+                    continue;
+                }
+
+                BigBrainPlugin.BigBrainLogger.LogInfo($"-> {excludeLayer.excludeLayerName} for brains {Utils.CreateCollectionText(excludeLayer.brainNames)} and roles {Utils.CreateCollectionText(excludeLayer.roles)}");
+            }
         }
     }
 }

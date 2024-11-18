@@ -1,7 +1,6 @@
 ﻿using EFT;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +15,8 @@ namespace DrakiaXYZ.BigBrain.Internal
         private List<string> _brainNames;
         private List<WildSpawnType> _roles;
 
-        // The constructor should be private because the object should only be used for one split operation
+        // The constructor should be private because the object should only be used for one split operation. This could be a static class, but the layer
+        // settings are used so frequently that it becomes tedious to pass them to each method. 
         private ExcludeLayerSplitter(string layerName, List<string> brainNames, List<WildSpawnType> roles)
         {
             _layerName = layerName;
@@ -48,20 +48,16 @@ namespace DrakiaXYZ.BigBrain.Internal
                 return excludeLayersAdded;
             }
 
+            // If no layers were created via splitLayersForSettings(), check if layers already exist for the settings
             if (Instance.ExcludeLayers.GetFirstWithOneOrMoreOfEachSetting(_layerName, _brainNames, _roles) != null)
             {
-#if DEBUG
-                BigBrainPlugin.BigBrainLogger.LogInfo($"No need to add exclusion for {_layerName} for brains {Utils.CreateCollectionText(_brainNames)} and roles {Utils.CreateCollectionText(_roles)}");
-#endif
-
                 return 0;
             }
 
-            // If no ExcludeLayers were split, a new ExcludeLayer needs to be created
             Instance.ExcludeLayers.Add(new ExcludeLayerInfo(_layerName, _brainNames, _roles));
 
 #if DEBUG
-            BigBrainPlugin.BigBrainLogger.LogInfo($"Added exclusion for {_layerName} for brains {Utils.CreateCollectionText(_brainNames)} and roles {Utils.CreateCollectionText(_roles)}");
+            BigBrainPlugin.BigBrainLogger.LogDebug($"Added exclusion for {_layerName} for brains {Utils.CreateCollectionText(_brainNames)} and roles {Utils.CreateCollectionText(_roles)}");
 #endif
 
             return 1;
@@ -72,18 +68,18 @@ namespace DrakiaXYZ.BigBrain.Internal
             // Split layers that have the same name and roles for the new brains
             int splitCount = splitForSettingsGeneric
             (
-                hasMatchingSettings: (excludeLayer) => Utils.HasSameContents(excludeLayer.affectedRoles, _roles),
+                hasMatchingSettings: (excludeLayer) => Utils.HasSameContents(excludeLayer.roles, _roles),
                 excludeLayerExists: (brainNames) => Instance.ExcludeLayers.DoesLayerExist(_layerName, brainNames, _roles),
-                collectionIntersectionGenerator: (excludeLayer) => new CollectionIntersection<string>(excludeLayer.affectedBrainNames, _brainNames),
+                collectionIntersectionGenerator: (excludeLayer) => new CollectionIntersection<string>(excludeLayer.brainNames, _brainNames),
                 excludeLayerGenerator: (brainNames) => new ExcludeLayerInfo(_layerName, brainNames, _roles)
             );
 
             // Split layers that have the same name and brains for the new roles
             splitCount += splitForSettingsGeneric
             (
-                hasMatchingSettings: (excludeLayer) => Utils.HasSameContents(excludeLayer.affectedBrainNames, _brainNames),
+                hasMatchingSettings: (excludeLayer) => Utils.HasSameContents(excludeLayer.brainNames, _brainNames),
                 excludeLayerExists: (roles) => Instance.ExcludeLayers.DoesLayerExist(_layerName, _brainNames, roles),
-                collectionIntersectionGenerator: (excludeLayer) => new CollectionIntersection<WildSpawnType>(excludeLayer.affectedRoles, _roles),
+                collectionIntersectionGenerator: (excludeLayer) => new CollectionIntersection<WildSpawnType>(excludeLayer.roles, _roles),
                 excludeLayerGenerator: (roles) => new ExcludeLayerInfo(_layerName, _brainNames, roles)
             );
 
@@ -95,7 +91,6 @@ namespace DrakiaXYZ.BigBrain.Internal
             //
             // - Differences between brains 1 and new brains: BossBully
             // - Common elements between brains 2 and new brains: BossBully
-
             int duplicates = Instance.ExcludeLayers.RemoveDuplicates();
 
             return splitCount - duplicates;
@@ -156,12 +151,16 @@ namespace DrakiaXYZ.BigBrain.Internal
 
                 allNewExcludeLayers.AddRange(newExcludeLayers);
 
-                // Remove the original layer unless it matches the intersection or difference collections that were generated
-                if (collectionIntersection.GetAllElementCollections().All(collection => !Utils.HasSameContents(collection, collectionIntersection.Collection1)))
+                // Remove the original layer unless it matches the intersection or difference collections that were generated. In that case, the layer
+                // settings are already reduced as much as possible. 
+                var newElementCollections = collectionIntersection.GetAllElementCollections();
+                if (newElementCollections.All(collection => !Utils.HasSameContents(collection, collectionIntersection.Collection1)))
                 {
                     obsoleteExcludeLayers.Add(excludeLayer);
 
-                    BigBrainPlugin.BigBrainLogger.LogInfo($"Removing original elements: {Utils.CreateCollectionText(collectionIntersection.Collection1)}");
+#if DEBUG
+                    BigBrainPlugin.BigBrainLogger.LogDebug($"Removing original elements: {Utils.CreateCollectionText(collectionIntersection.Collection1)}");
+#endif
                 }
             }
 
@@ -201,11 +200,14 @@ namespace DrakiaXYZ.BigBrain.Internal
                 throw new ArgumentNullException(nameof(excludeLayerGenerator));
             }
 
+            // The layer only needs to be split if it has some overlapping and unique content. If it has the same content, it's redundant. If it only
+            // has unique content, it should be added as a separate layer. 
             if (!collectionIntersection.HasCommonAndUniqueElements)
             {
                 return Enumerable.Empty<ExcludeLayerInfo>();
             }
-
+            
+            // Only add layers that have new settings
             IEnumerable<IEnumerable<T>> newCollections = collectionIntersection
                 .GetAllElementCollections()
                 .Where(collection => !excludeLayerExists(collection));
@@ -216,7 +218,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
 #if DEBUG
-            BigBrainPlugin.BigBrainLogger.LogInfo($"Splitting exclusion for {_layerName} for brains {Utils.CreateCollectionText(_brainNames)} and roles {Utils.CreateCollectionText(_roles)} into groups:");
+            BigBrainPlugin.BigBrainLogger.LogDebug($"Splitting exclusion for {_layerName} for brains {Utils.CreateCollectionText(_brainNames)} and roles {Utils.CreateCollectionText(_roles)} into groups:");
 #endif
 
             List<ExcludeLayerInfo> newExcludeLayers = new List<ExcludeLayerInfo>();
@@ -226,7 +228,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 newExcludeLayers.Add(newExcludeLayer);
 
 #if DEBUG
-                BigBrainPlugin.BigBrainLogger.LogInfo($"-> {Utils.CreateCollectionText(collection)}");
+                BigBrainPlugin.BigBrainLogger.LogDebug($"-> {Utils.CreateCollectionText(collection)}");
 #endif
             }
 

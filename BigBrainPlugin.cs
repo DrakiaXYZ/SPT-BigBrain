@@ -9,6 +9,7 @@ namespace DrakiaXYZ.BigBrain
     [BepInDependency("com.SPT.core", "3.9.0")]
     internal class BigBrainPlugin : BaseUnityPlugin
     {
+        // This needs to be initialized because other mods could interact with BrainManager before this plugin has loaded
         internal static BepInEx.Logging.ManualLogSource BigBrainLogger { get; private set; } = new BepInEx.Logging.ManualLogSource("DrakiaXYZ-BigBrain");
 
         private void Awake()

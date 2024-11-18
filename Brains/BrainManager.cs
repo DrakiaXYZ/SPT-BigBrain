@@ -71,23 +71,23 @@ namespace DrakiaXYZ.BigBrain.Brains
             public int customLayerPriority { get; private set; }
             public int customLayerId { get; private set; }
 
-            public IReadOnlyList<string> CustomLayerBrains => affectedBrainNames.AsReadOnly();
-            public IReadOnlyList<WildSpawnType> CustomLayerRoles => affectedRoles.AsReadOnly();
+            public IReadOnlyList<string> CustomLayerBrains => brainNames.AsReadOnly();
+            public IReadOnlyList<WildSpawnType> CustomLayerRoles => roles.AsReadOnly();
 
             public LayerInfo(Type layerType, List<string> layerBrains, int layerPriority, int layerId)
             {
                 customLayerType = layerType;
-                affectedBrainNames = layerBrains;
+                brainNames = layerBrains;
                 customLayerPriority = layerPriority;
                 customLayerId = layerId;
 
-                affectedRoles = AllWildSpawnTypes;
+                roles = AllWildSpawnTypes;
             }
 
             public LayerInfo(Type layerType, List<string> layerBrains, int layerPriority, int layerId, List<WildSpawnType> roles)
                 : this(layerType, layerBrains, layerPriority, layerId)
             {
-                affectedRoles = roles;
+                base.roles = roles;
             }
         }
 
@@ -95,21 +95,21 @@ namespace DrakiaXYZ.BigBrain.Brains
         {
             public string excludeLayerName { get; private set; }
 
-            public IReadOnlyList<string> ExcludeLayerBrains => affectedBrainNames.AsReadOnly();
-            public IReadOnlyList<WildSpawnType> ExcludeLayerRoles => affectedRoles.AsReadOnly();
+            public IReadOnlyList<string> ExcludeLayerBrains => brainNames.AsReadOnly();
+            public IReadOnlyList<WildSpawnType> ExcludeLayerRoles => roles.AsReadOnly();
 
             public ExcludeLayerInfo(string layerName, List<string> brains)
             {
-                affectedBrainNames = brains;
+                brainNames = brains;
                 excludeLayerName = layerName;
 
-                affectedRoles = AllWildSpawnTypes;
+                roles = AllWildSpawnTypes;
             }
 
             public ExcludeLayerInfo(string layerName, List<string> brains, List<WildSpawnType> roles)
                 : this(layerName, brains)
             {
-                affectedRoles = roles;
+                base.roles = roles;
             }
         }
 
@@ -221,7 +221,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                     continue;
                 }
 
-                if (!AbstractLayerInfo.DoSettingsAffectBot(botOwner, brainNames, roles))
+                if (!botOwner.IsAffectedBySettings(brainNames, roles))
                 {
                     continue;
                 }

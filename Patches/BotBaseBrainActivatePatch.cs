@@ -41,14 +41,16 @@ namespace DrakiaXYZ.BigBrain.Patches
 
                 foreach (BrainManager.LayerInfo layerInfo in BrainManager.Instance.CustomLayers.Values)
                 {
-                    if (layerInfo.CustomLayerBrains.Contains(botBrain.ShortName()))
+                    if (!layerInfo.AffectsBot(botOwner))
                     {
-                        CustomLayerWrapper customLayerWrapper = new CustomLayerWrapper(layerInfo.customLayerType, botOwner, layerInfo.customLayerPriority);
-#if DEBUG
-                        Logger.LogDebug($"  Injecting {customLayerWrapper.Name()}({layerInfo.customLayerId}) with priority {layerInfo.customLayerPriority}");
-#endif
-                        _addLayerMethod.Invoke(botBrain, new object[] { layerInfo.customLayerId, customLayerWrapper, true });
+                        continue;
                     }
+
+                    CustomLayerWrapper customLayerWrapper = new CustomLayerWrapper(layerInfo.customLayerType, botOwner, layerInfo.customLayerPriority);
+#if DEBUG
+                    Logger.LogDebug($"  Injecting {customLayerWrapper.Name()}({layerInfo.customLayerId}) with priority {layerInfo.customLayerPriority}");
+#endif
+                    _addLayerMethod.Invoke(botBrain, new object[] { layerInfo.customLayerId, customLayerWrapper, true });
                 }
             }
             catch (Exception ex)

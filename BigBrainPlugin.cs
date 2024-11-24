@@ -5,13 +5,17 @@ using System;
 
 namespace DrakiaXYZ.BigBrain
 {
-    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.1.0")]
+    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.2.0")]
     [BepInDependency("com.SPT.core", "3.9.0")]
     internal class BigBrainPlugin : BaseUnityPlugin
     {
+        // This needs to be initialized because other mods could interact with BrainManager before this plugin has loaded
+        internal static BepInEx.Logging.ManualLogSource BigBrainLogger { get; private set; } = new BepInEx.Logging.ManualLogSource("DrakiaXYZ-BigBrain");
+
         private void Awake()
         {
             Logger.LogInfo("Loading: DrakiaXYZ-BigBrain");
+            BigBrainLogger = Logger;
 
             if (!TarkovVersion.CheckEftVersion(Logger, Info, Config))
             {

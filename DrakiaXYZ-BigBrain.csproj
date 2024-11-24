@@ -101,10 +101,14 @@
     <Compile Include="Brains\CustomBrain.cs" />
     <Compile Include="Brains\CustomLayer.cs" />
     <Compile Include="Brains\CustomLogic.cs" />
+    <Compile Include="Internal\AbstractLayerInfo.cs" />
     <Compile Include="Internal\BrainHelpers.cs" />
+    <Compile Include="Internal\CollectionIntersection.cs" />
     <Compile Include="Internal\CustomLayerWrapper.cs" />
     <Compile Include="Internal\CustomLogicWrapper.cs" />
     <None Include="LICENSE" />
+    <Compile Include="Internal\ExcludeLayerHelpers.cs" />
+    <Compile Include="Internal\ExcludeLayerSplitter.cs" />
     <Compile Include="Patches\BotAgentUpdatePatch.cs" />
     <Compile Include="Patches\BotBaseBrainActivateLayerPatch.cs" />
     <Compile Include="Patches\BotBaseBrainActivatePatch.cs" />

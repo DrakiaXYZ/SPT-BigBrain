@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
-using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
+using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {

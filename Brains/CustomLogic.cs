@@ -15,7 +15,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         public virtual void Start() { }
         public virtual void Stop() { }
 
-        public abstract void Update();
+        public abstract void Update(CustomLayer.ActionData data);
 
         public virtual void BuildDebugText(StringBuilder stringBuilder) { }
     }

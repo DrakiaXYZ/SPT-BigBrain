@@ -30,12 +30,19 @@ namespace DrakiaXYZ.BigBrain.Brains
         {
             public Type Type { get; set; }
             public string Reason { get; set; }
+            public ActionData Data { get; set; }
 
-            public Action(Type logicType, string reason)
+            public Action(Type logicType, string reason, ActionData data = null)
             {
                 Type = logicType;
                 Reason = reason;
+                Data = data;
             }
+        }
+
+        public class ActionData : GClass26
+        {
+
         }
     }
 }

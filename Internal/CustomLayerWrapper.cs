@@ -7,7 +7,8 @@ using System.Reflection;
 using System.Collections;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
-using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision>;
+using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
+using BaseNodeAbstractClass = GClass170<GClass26>;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {
@@ -50,7 +51,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 BrainManager.Instance.CustomLogicList.Add(action.Type);
             }
 
-            return new AILogicActionResultStruct((BotLogicDecision)logicId, action.Reason);
+            return new AILogicActionResultStruct((BotLogicDecision)logicId, action.Reason, action.Data);
         }
 
         public override string Name()

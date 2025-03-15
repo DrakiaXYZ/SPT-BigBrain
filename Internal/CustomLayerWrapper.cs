@@ -8,7 +8,7 @@ using System.Collections;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
-using BaseNodeAbstractClass = GClass170<GClass26>;
+using BaseNodeAbstractClass = GClass168;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {

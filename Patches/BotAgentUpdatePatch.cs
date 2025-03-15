@@ -6,7 +6,7 @@ using System.Collections;
 using System.Reflection;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
-using BaseNodeAbstractClass = GClass170<GClass26>;
+using BaseNodeAbstractClass = GClass168;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
 
 namespace DrakiaXYZ.BigBrain.Patches
@@ -16,53 +16,36 @@ namespace DrakiaXYZ.BigBrain.Patches
      **/
     internal class BotAgentUpdatePatch : ModulePatch
     {
-        private static FieldInfo _strategyField;
-        private static FieldInfo _lastResultField;
-        private static FieldInfo _logicInstanceDictField;
-        private static FieldInfo _lazyGetterField;
-
         protected override MethodBase GetTargetMethod()
         {
-            Type botAgentType = typeof(AICoreLogicAgentClass);
-
-            _strategyField = Utils.GetFieldByType(botAgentType, typeof(AICoreStrategyAbstractClass<>));
-            _lastResultField = Utils.GetFieldByType(botAgentType, typeof(AILogicActionResultStruct));
-            _logicInstanceDictField = Utils.GetFieldByType(botAgentType, typeof(IDictionary));
-            _lazyGetterField = Utils.GetFieldByType(botAgentType, typeof(Delegate));
-
-            return AccessTools.Method(botAgentType, "Update");
+            return AccessTools.Method(typeof(AICoreLogicAgentClass), "Update");
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(object __instance)
+        public static bool PatchPrefix(AICoreLogicAgentClass __instance)
         {
 #if DEBUG
             try {
 #endif
-
-                // Get values we'll use later
-                BaseBrain strategy = _strategyField.GetValue(__instance) as BaseBrain;
-                var aiCoreNodeDict = _logicInstanceDictField.GetValue(__instance) as IDictionary;
-
                 // Update the brain, this is instead of method_10 in the original code
-                strategy.ManualUpdate();
+                __instance.aICoreStrategyAbstractClass.ManualUpdate();
 
                 // Call the brain update
-                AILogicActionResultStruct lastResult = (AILogicActionResultStruct)_lastResultField.GetValue(__instance);
-                AILogicActionResultStruct? result = strategy.Update(lastResult);
+                AILogicActionResultStruct lastResult = __instance.aICoreActionResultStruct;
+                AILogicActionResultStruct? result = __instance.aICoreStrategyAbstractClass.Update(lastResult);
                 if (result != null)
                 {
                     // If an instance of our action doesn't exist in our dict, add it
-                    int action = (int)result.Value.Action;
-                    BaseNodeAbstractClass nodeInstance = aiCoreNodeDict[(BotLogicDecision)action] as BaseNodeAbstractClass;
+                    var aiCoreNodeDict = __instance.dictionary_0;
+                    BotLogicDecision action = result.Value.Action;
+                    BaseNodeAbstractClass nodeInstance = aiCoreNodeDict[action];
                     if (nodeInstance == null)
                     {
-                        Delegate lazyGetter = _lazyGetterField.GetValue(__instance) as Delegate;
-                        nodeInstance = lazyGetter.DynamicInvoke(new object[] { (BotLogicDecision)action }) as BaseNodeAbstractClass;
+                        nodeInstance = __instance.func_0(action);
 
                         if (nodeInstance != null)
                         {
-                            aiCoreNodeDict.Add((BotLogicDecision)action, nodeInstance);
+                            aiCoreNodeDict.Add(action, nodeInstance);
                         }
                     }
 
@@ -74,10 +57,10 @@ namespace DrakiaXYZ.BigBrain.Patches
                             customLogic.Start();
                         }
 
-                        nodeInstance.UpdateNodeByBrain(lastResult.Data);
+                        nodeInstance.UpdateNodeByMain(lastResult.Data);
                     }
 
-                    _lastResultField.SetValue(__instance, result);
+                    __instance.aICoreActionResultStruct = result.Value;
                 }
 
                 return false;

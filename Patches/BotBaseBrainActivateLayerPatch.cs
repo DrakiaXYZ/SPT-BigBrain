@@ -34,30 +34,43 @@ namespace DrakiaXYZ.BigBrain.Patches
         [PatchPrefix]
         public static bool PatchPrefix(object __instance, AICoreLogicLayerClass layer)
         {
-            // For base layers, we can fall back to the original code, as it will add to the end 
-            // of the same-priority layers, which will already prioritize custom layers
-            if (!(layer is CustomLayerWrapper))
+#if DEBUG
+            try
             {
-                return true;
-            }
-
-            List<AICoreLogicLayerClass> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLogicLayerClass>;
-
-            layer.Activate();
-
-            // Look for the first layer with an equal or lower priority, and add out layer before it
-            for (int i = 0; i < activeLayerList.Count; i++)
-            {
-                AICoreLogicLayerClass activeLayer = activeLayerList[i];
-                if (layer.Priority >= activeLayer.Priority)
+#endif
+                // For base layers, we can fall back to the original code, as it will add to the end 
+                // of the same-priority layers, which will already prioritize custom layers
+                if (!(layer is CustomLayerWrapper))
                 {
-                    activeLayerList.Insert(i, layer);
-                    return false;
+                    return true;
                 }
-            }
-            activeLayerList.Add(layer);
 
-            return false;
+                List<AICoreLogicLayerClass> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLogicLayerClass>;
+
+                layer.Activate();
+
+                // Look for the first layer with an equal or lower priority, and add out layer before it
+                for (int i = 0; i < activeLayerList.Count; i++)
+                {
+                    AICoreLogicLayerClass activeLayer = activeLayerList[i];
+                    if (layer.Priority >= activeLayer.Priority)
+                    {
+                        activeLayerList.Insert(i, layer);
+                        return false;
+                    }
+                }
+                activeLayerList.Add(layer);
+
+                return false;
+
+#if DEBUG
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                throw ex;
+            }
+#endif
         }
     }
 }

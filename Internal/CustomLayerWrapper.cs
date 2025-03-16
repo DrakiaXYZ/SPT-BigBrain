@@ -14,8 +14,6 @@ namespace DrakiaXYZ.BigBrain.Internal
 {
     internal class CustomLayerWrapper : BaseLogicLayerSimpleAbstractClass
     {
-        private static FieldInfo _logicInstanceDictField = null;
-
         private static int _currentLogicId = BrainManager.START_LOGIC_ID;
 
         protected ManualLogSource Logger;
@@ -118,15 +116,13 @@ namespace DrakiaXYZ.BigBrain.Internal
                 return null;
             }
 
-            if (_logicInstanceDictField == null)
+            BotLogicDecision logicDecision = botOwner.Brain.Agent.LastResult().Action;
+            if (botOwner.Brain.Agent.dictionary_0.TryGetValue(logicDecision, out var logicInstance))
             {
-                Type botAgentType = typeof(AICoreLogicAgentClass);
-                _logicInstanceDictField = AccessTools.Field(botAgentType, "dictionary_0");
+                return logicInstance;
             }
 
-            BotLogicDecision logicDecision = botOwner.Brain.Agent.LastResult().Action;
-            var aiCoreNodeDict = _logicInstanceDictField.GetValue(botOwner.Brain.Agent) as IDictionary;
-            return aiCoreNodeDict[logicDecision] as BaseNodeAbstractClass;
+            return null;
         }
 
         internal CustomLayer CustomLayer()

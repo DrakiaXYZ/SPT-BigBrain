@@ -5,7 +5,7 @@ using System;
 
 namespace DrakiaXYZ.BigBrain
 {
-    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.3.1")]
+    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.3.2")]
 #if !DEBUG
     [BepInDependency("com.SPT.core", "3.11.0")]
 #endif

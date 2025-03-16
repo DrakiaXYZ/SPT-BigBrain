@@ -38,8 +38,8 @@ namespace DrakiaXYZ.BigBrain.Patches
                     // If an instance of our action doesn't exist in our dict, add it
                     var aiCoreNodeDict = __instance.dictionary_0;
                     BotLogicDecision action = result.Value.Action;
-                    BaseNodeAbstractClass nodeInstance = aiCoreNodeDict[action];
-                    if (nodeInstance == null)
+                    BaseNodeAbstractClass nodeInstance;
+                    if (!aiCoreNodeDict.TryGetValue(action, out nodeInstance))
                     {
                         nodeInstance = __instance.func_0(action);
 

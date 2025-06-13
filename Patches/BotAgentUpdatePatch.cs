@@ -6,7 +6,7 @@ using System.Collections;
 using System.Reflection;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
-using BaseNodeAbstractClass = GClass168;
+using BaseNodeAbstractClass = GClass175;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
 
 namespace DrakiaXYZ.BigBrain.Patches
@@ -28,20 +28,20 @@ namespace DrakiaXYZ.BigBrain.Patches
             try {
 #endif
                 // Update the brain, this is instead of method_10 in the original code
-                __instance.aICoreStrategyAbstractClass.ManualUpdate();
+                __instance.Gclass309_0.ManualUpdate();
 
                 // Call the brain update
-                AILogicActionResultStruct lastResult = __instance.aICoreActionResultStruct;
-                AILogicActionResultStruct? result = __instance.aICoreStrategyAbstractClass.Update(lastResult);
+                AILogicActionResultStruct lastResult = __instance.Gstruct8_0;
+                AILogicActionResultStruct? result = __instance.Gclass309_0.Update(lastResult);
                 if (result != null)
                 {
                     // If an instance of our action doesn't exist in our dict, add it
-                    var aiCoreNodeDict = __instance.dictionary_0;
+                    var aiCoreNodeDict = __instance.Dictionary_0;
                     BotLogicDecision action = result.Value.Action;
                     BaseNodeAbstractClass nodeInstance;
                     if (!aiCoreNodeDict.TryGetValue(action, out nodeInstance))
                     {
-                        nodeInstance = __instance.func_0(action);
+                        nodeInstance = __instance.Func_0(action);
 
                         if (nodeInstance != null)
                         {
@@ -60,7 +60,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                         nodeInstance.UpdateNodeByMain(lastResult.Data);
                     }
 
-                    __instance.aICoreActionResultStruct = result.Value;
+                    __instance.Gstruct8_0 = result.Value;
                 }
 
                 return false;

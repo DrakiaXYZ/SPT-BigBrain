@@ -25,7 +25,7 @@ namespace DrakiaXYZ.BigBrain.Patches
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(BotOwner ___botOwner_0, BotLogicDecision decision, ref object __result)
+        public static bool PatchPrefix(BotOwner ___BotOwner_0, BotLogicDecision decision, ref object __result)
         {
 #if DEBUG
             try
@@ -39,10 +39,10 @@ namespace DrakiaXYZ.BigBrain.Patches
                     logicIndex -= BrainManager.START_LOGIC_ID;
 
                     Type logicType = BrainManager.Instance.CustomLogicList[logicIndex];
-                    CustomLogicWrapper customLogicWrapper = new CustomLogicWrapper(logicType, ___botOwner_0);
+                    CustomLogicWrapper customLogicWrapper = new CustomLogicWrapper(logicType, ___BotOwner_0);
                     __result = customLogicWrapper;
 #if DEBUG
-                    Logger.LogDebug($"Setting bot {___botOwner_0.name} logic to {logicType.FullName}");
+                    Logger.LogDebug($"Setting bot {___BotOwner_0.name} logic to {logicType.FullName}");
 #endif
 
                     return false;

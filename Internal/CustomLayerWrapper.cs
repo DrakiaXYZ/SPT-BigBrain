@@ -8,7 +8,7 @@ using System.Collections;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
-using BaseNodeAbstractClass = GClass168;
+using BaseNodeAbstractClass = GClass175;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {
@@ -101,7 +101,7 @@ namespace DrakiaXYZ.BigBrain.Internal
         private void StopCurrentLogic()
         {
             customLayer.CurrentAction = null;
-            CustomLogicWrapper logicInstance = GetLogicInstance(botOwner_0) as CustomLogicWrapper;
+            CustomLogicWrapper logicInstance = GetLogicInstance(BotOwner_0) as CustomLogicWrapper;
             if (logicInstance != null)
             {
                 logicInstance.Stop();
@@ -117,7 +117,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
             BotLogicDecision logicDecision = botOwner.Brain.Agent.LastResult().Action;
-            if (botOwner.Brain.Agent.dictionary_0.TryGetValue(logicDecision, out var logicInstance))
+            if (botOwner.Brain.Agent.Dictionary_0.TryGetValue(logicDecision, out var logicInstance))
             {
                 return logicInstance;
             }

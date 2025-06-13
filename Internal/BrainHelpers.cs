@@ -26,7 +26,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 Type baseBrainType = typeof(BaseBrain);
                 Type aiCoreStrategyType = baseBrainType.BaseType;
 
-                _layerDictionary = AccessTools.Field(aiCoreStrategyType, "dictionary_0");
+                _layerDictionary = AccessTools.Field(aiCoreStrategyType, "Dictionary_0");
             }
 
             var brainLayerDictionayer = _layerDictionary.GetValue(brain) as Dictionary<int, AICoreLogicLayerClass>;

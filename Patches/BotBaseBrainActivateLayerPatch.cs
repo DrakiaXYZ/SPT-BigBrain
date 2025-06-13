@@ -22,7 +22,7 @@ namespace DrakiaXYZ.BigBrain.Patches
             Type baaseBrainType = typeof(BaseBrain);
             Type aiCoreStrategyClassType = baaseBrainType.BaseType;
 
-            _activeLayerListField = AccessTools.Field(aiCoreStrategyClassType, "list_0");
+            _activeLayerListField = AccessTools.Field(aiCoreStrategyClassType, "List_0");
 
             return AccessTools.GetDeclaredMethods(aiCoreStrategyClassType).Single(x =>
             {

@@ -27,7 +27,7 @@ namespace DrakiaXYZ.BigBrain.Patches
             Type baseBrainType = typeof(BaseBrain);
             Type aiCoreStrategyType = baseBrainType.BaseType;
 
-            _ownerField = AccessTools.Field(baseBrainType, "Owner");
+            _ownerField = AccessTools.Field(baseBrainType, "_owner");
 
             string activeLayerPropertyName = Utils.GetPropertyNameByType(aiCoreStrategyType, typeof(AICoreLogicLayerClass));
             _activeLayerGetter = AccessTools.PropertyGetter(aiCoreStrategyType, activeLayerPropertyName);
@@ -76,6 +76,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                             {
                                 action(activeLayer);
                             }
+
                             // Allow telling custom layers they're starting
                             if (activeLayer is CustomLayerWrapper customNewLayer)
                             {

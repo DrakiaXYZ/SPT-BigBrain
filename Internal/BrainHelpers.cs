@@ -12,32 +12,6 @@ namespace DrakiaXYZ.BigBrain.Internal
 {
     internal static class BrainHelpers
     {
-        private static FieldInfo _layerDictionary = null;
-
-        public static Dictionary<int, AICoreLogicLayerClass> GetBrainLayerDictionary(this BaseBrain brain)
-        {
-            if (brain == null)
-            {
-                throw new ArgumentNullException(nameof(brain));
-            }
-
-            if (_layerDictionary == null)
-            {
-                Type baseBrainType = typeof(BaseBrain);
-                Type aiCoreStrategyType = baseBrainType.BaseType;
-
-                _layerDictionary = AccessTools.Field(aiCoreStrategyType, "Dictionary_0");
-            }
-
-            var brainLayerDictionayer = _layerDictionary.GetValue(brain) as Dictionary<int, AICoreLogicLayerClass>;
-            if (brainLayerDictionayer == null)
-            {
-                throw new InvalidOperationException($"Brain dictionary not found for provided base brain (Brain type = {brain?.ShortName() ?? "null"})");
-            }
-
-            return brainLayerDictionayer;
-        }
-
         internal static void RemoveAllExcludedLayers(this BotOwner botOwner)
         {
             if (botOwner == null)
@@ -84,7 +58,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
             // Get all brain layers the bot currently has
-            Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.GetBrainLayerDictionary();
+            Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.Dictionary_0;
 
             int layerIndexToRemove = -1;
 
@@ -135,7 +109,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
             // Get all brain layers the bot currently has
-            Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.GetBrainLayerDictionary();
+            Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.Dictionary_0;
 
             List<BrainManager.ExcludedLayerInfo> restoredLayers = new List<BrainManager.ExcludedLayerInfo>();
 

@@ -40,11 +40,9 @@ namespace DrakiaXYZ.BigBrain.Brains
             }
         }
 
-        public class ActionData : GClass31
+        public class ActionData : GClass26
         {
-            public ActionData(CustomNavigationPoint p) : base(p)
-            {
-            }
+
         }
     }
 }

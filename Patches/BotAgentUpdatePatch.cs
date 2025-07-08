@@ -6,8 +6,8 @@ using System.Collections;
 using System.Reflection;
 
 using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
-using BaseNodeAbstractClass = GClass175;
 using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
+using BaseNodeAbstractClass = BotNodeAbstractClass;
 
 namespace DrakiaXYZ.BigBrain.Patches
 {

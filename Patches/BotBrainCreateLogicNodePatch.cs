@@ -42,7 +42,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                     CustomLogicWrapper customLogicWrapper = new CustomLogicWrapper(logicType, __instance.BotOwner_0);
                     __result = customLogicWrapper;
 #if DEBUG
-                    Logger.LogDebug($"Setting bot {___botOwner_0.name} logic to {logicType.FullName}");
+                    Logger.LogDebug($"Setting bot {__instance.BotOwner_0.name} logic to {logicType.FullName}");
 #endif
 
                     return false;

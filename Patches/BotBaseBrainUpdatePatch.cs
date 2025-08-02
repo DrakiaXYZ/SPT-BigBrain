@@ -27,7 +27,7 @@ namespace DrakiaXYZ.BigBrain.Patches
             Type baseBrainType = typeof(BaseBrain);
             Type aiCoreStrategyType = baseBrainType.BaseType;
 
-            _ownerField = AccessTools.Field(baseBrainType, "_owner");
+            _ownerField = AccessTools.Field(baseBrainType, "Owner");
 
             string activeLayerPropertyName = Utils.GetPropertyNameByType(aiCoreStrategyType, typeof(AICoreLogicLayerClass));
             _activeLayerGetter = AccessTools.PropertyGetter(aiCoreStrategyType, activeLayerPropertyName);

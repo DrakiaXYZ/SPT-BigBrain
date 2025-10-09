@@ -3,13 +3,17 @@ $tarkovPath = '{0}\..\..\..\EscapeFromTarkov.exe' -f $PSScriptRoot
 $tarkovVersion = (Get-Item -Path $tarkovPath).VersionInfo.FileVersionRaw.Revision
 
 # Update AssemblyVersion
-$assemblyPath = '{0}\..\Properties\AssemblyInfo.cs' -f $PSScriptRoot
+$versionPath = '{0}\TarkovVersion.cs' -f $PSScriptRoot
 $versionPattern = '^\[assembly: TarkovVersion\(.*\)\]'
-(Get-Content $assemblyPath) | ForEach-Object {
+(Get-Content $versionPath) | ForEach-Object {
     if ($_ -match $versionPattern){
     	$versionType = $matches[1]
-        '[assembly: TarkovVersion({0})]' -f $tarkovVersion
+        $newLine = '[assembly: TarkovVersion({0})]' -f $tarkovVersion
+        Write-Host "Changed the line from '$_' to '$newLine'"
+        $newLine
     } else {
         $_
     }
-} | Set-Content $assemblyPath
+} | Set-Content $versionPath
+
+Write-Host "TarkovVersion.cs updated successfully!"

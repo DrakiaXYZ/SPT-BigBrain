@@ -31,33 +31,31 @@ namespace DrakiaXYZ.BigBrain.Patches
                 __instance.Gclass309_0.ManualUpdate();
 
                 // Call the brain update
-                AILogicActionResultStruct lastResult = __instance.Gstruct8_0;
-                AILogicActionResultStruct? result = __instance.Gclass309_0.Update(lastResult);
+                AILogicActionResultStruct? result = __instance.Gclass309_0.Update(__instance.Gstruct8_0);
                 if (result != null)
                 {
                     // If an instance of our action doesn't exist in our dict, add it
-                    var aiCoreNodeDict = __instance.Dictionary_0;
                     BotLogicDecision action = result.Value.Action;
                     BaseNodeAbstractClass nodeInstance;
-                    if (!aiCoreNodeDict.TryGetValue(action, out nodeInstance))
+                    if (!__instance.Dictionary_0.TryGetValue(action, out nodeInstance))
                     {
                         nodeInstance = __instance.Func_0(action);
 
                         if (nodeInstance != null)
                         {
-                            aiCoreNodeDict.Add(action, nodeInstance);
+                            __instance.Dictionary_0.Add(action, nodeInstance);
                         }
                     }
 
                     if (nodeInstance != null)
                     {
                         // If we're switching to a new action, call Start() on the new logic
-                        if (lastResult.Action != result.Value.Action && nodeInstance is CustomLogicWrapper customLogic)
+                        if (__instance.Gstruct8_0.Action != result.Value.Action && nodeInstance is CustomLogicWrapper customLogic)
                         {
                             customLogic.Start();
                         }
 
-                        nodeInstance.UpdateNodeByMain(lastResult.Data);
+                        nodeInstance.UpdateNodeByMain(__instance.Gstruct8_0.Data);
                     }
 
                     __instance.Gstruct8_0 = result.Value;

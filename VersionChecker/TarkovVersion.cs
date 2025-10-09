@@ -1,12 +1,14 @@
-﻿using BepInEx;
-using BepInEx.Bootstrap;
+using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using DrakiaXYZ.BigBrain.VersionChecker;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+
+[assembly: TarkovVersion(40087)]
 
 namespace DrakiaXYZ.BigBrain.VersionChecker
 {
@@ -48,7 +50,6 @@ namespace DrakiaXYZ.BigBrain.VersionChecker
             {
                 string errorMessage = $"ERROR: This version of {Info.Metadata.Name} v{Info.Metadata.Version} was built for Tarkov {buildVersion}, but you are running {currentVersion}. Please download the correct plugin version.";
                 Logger.LogError(errorMessage);
-                Chainloader.DependencyErrors.Add(errorMessage);
 
                 if (Config != null)
                 {
@@ -91,11 +92,6 @@ namespace DrakiaXYZ.BigBrain.VersionChecker
             // Centered red disabled text
             GUILayout.Label("Plugin has been disabled!", styleError, new GUILayoutOption[] { GUILayout.ExpandWidth(true) });
             GUILayout.EndVertical();
-        }
-
-        public struct VersionResponse
-        {
-            public string Version { get; set; }
         }
 
 #pragma warning disable 0169, 0414, 0649

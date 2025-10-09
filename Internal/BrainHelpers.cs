@@ -1,10 +1,7 @@
 ﻿using DrakiaXYZ.BigBrain.Brains;
 using EFT;
-using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
 

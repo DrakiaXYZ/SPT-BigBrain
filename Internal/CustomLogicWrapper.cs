@@ -4,7 +4,7 @@ using System;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {
-    using BaseNodeAbstractClass = GClass170<GClass26>;
+    using BaseNodeAbstractClass = GClass200<GClass26>;
 
     internal class CustomLogicWrapper : BaseNodeAbstractClass
     {

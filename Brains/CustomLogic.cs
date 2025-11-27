@@ -3,7 +3,7 @@ using System.Text;
 
 namespace DrakiaXYZ.BigBrain.Brains
 {
-    public abstract class CustomLogic
+    public abstract class CustomLogic<T> where T : CustomLayer.ActionData
     {
         public BotOwner BotOwner { get; private set; }
 
@@ -15,8 +15,13 @@ namespace DrakiaXYZ.BigBrain.Brains
         public virtual void Start() { }
         public virtual void Stop() { }
 
-        public abstract void Update(CustomLayer.ActionData data);
+        public abstract void Update(T data);
 
         public virtual void BuildDebugText(StringBuilder stringBuilder) { }
+    }
+
+    public abstract class CustomLogic : CustomLogic<CustomLayer.ActionData>
+    {
+        public CustomLogic(BotOwner botOwner) : base(botOwner) { }
     }
 }

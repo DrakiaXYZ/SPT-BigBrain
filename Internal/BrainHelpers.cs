@@ -3,8 +3,6 @@ using EFT;
 using System;
 using System.Collections.Generic;
 
-using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
-
 namespace DrakiaXYZ.BigBrain.Internal
 {
     internal static class BrainHelpers
@@ -55,7 +53,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
             // Get all brain layers the bot currently has
-            Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.Dictionary_0;
+            Dictionary<int, AICoreLayer<BotLogicDecision>> botBrainLayerDictionary = botOwner.Brain.BaseBrain._layers;
 
             int layerIndexToRemove = -1;
 
@@ -72,10 +70,10 @@ namespace DrakiaXYZ.BigBrain.Internal
 
                 // Remove the brain layer from the bot's brain
                 layerIndexToRemove = index;
-                botOwner.Brain.BaseBrain.method_3(index);
+                botOwner.Brain.BaseBrain.DeactivateLayer(index);
                 
                 // Ensure there is no longer a brain layer of the same type in the bot's brain
-                if (botOwner.Brain.BaseBrain.method_2(botBrainLayerDictionary[index]))
+                if (botOwner.Brain.BaseBrain.IsLayerActive(botBrainLayerDictionary[index]))
                 {
                     throw new InvalidOperationException($"Could not remove brain layer '{layerName}' from {botOwner.name}");
                 }
@@ -106,7 +104,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             }
 
             // Get all brain layers the bot currently has
-            Dictionary<int, AICoreLogicLayerClass> botBrainLayerDictionary = botOwner.Brain.BaseBrain.Dictionary_0;
+            Dictionary<int, AICoreLayer<BotLogicDecision>> botBrainLayerDictionary = botOwner.Brain.BaseBrain._layers;
 
             List<BrainManager.ExcludedLayerInfo> restoredLayers = new List<BrainManager.ExcludedLayerInfo>();
 
@@ -128,7 +126,7 @@ namespace DrakiaXYZ.BigBrain.Internal
                 }
 
                 // Add the brain layer back to the bot's brain
-                if (!botOwner.Brain.BaseBrain.method_0(excludedLayer.Index, excludedLayer.Layer, true))
+                if (!botOwner.Brain.BaseBrain.TryAddLayer(excludedLayer.Index, excludedLayer.Layer, true))
                 {
                     throw new InvalidOperationException($"Cannot restore '{excludedLayer.LayerName}' for {botOwner.name}. Failed to add layer.");
                 }

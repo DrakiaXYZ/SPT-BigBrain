@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-[assembly: TarkovVersion(40087)]
+[assembly: TarkovVersion(40743)]
 
 namespace DrakiaXYZ.BigBrain.VersionChecker
 {

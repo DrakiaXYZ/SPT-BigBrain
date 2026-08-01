@@ -6,9 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
-using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
-
 namespace DrakiaXYZ.BigBrain.Patches
 {
     /**
@@ -27,20 +24,20 @@ namespace DrakiaXYZ.BigBrain.Patches
             Type baseBrainType = typeof(BaseBrain);
             Type aiCoreStrategyType = baseBrainType.BaseType;
 
-            _ownerField = AccessTools.Field(baseBrainType, "Owner");
+            _ownerField = AccessTools.Field(baseBrainType, "_owner");
 
-            string activeLayerPropertyName = Utils.GetPropertyNameByType(aiCoreStrategyType, typeof(AICoreLogicLayerClass));
+            string activeLayerPropertyName = Utils.GetPropertyNameByType(aiCoreStrategyType, typeof(AICoreLayer<BotLogicDecision>));
             _activeLayerGetter = AccessTools.PropertyGetter(aiCoreStrategyType, activeLayerPropertyName);
             _activeLayerSetter = AccessTools.PropertySetter(aiCoreStrategyType, activeLayerPropertyName);
 
-            _activeLayerListField = Utils.GetFieldByType(aiCoreStrategyType, typeof(List<AICoreLogicLayerClass>));
-            _onLayerChangedToField = Utils.GetFieldByType(aiCoreStrategyType, typeof(Action<AICoreLogicLayerClass>));
+            _activeLayerListField = Utils.GetFieldByType(aiCoreStrategyType, typeof(List<AICoreLayer<BotLogicDecision>>));
+            _onLayerChangedToField = Utils.GetFieldByType(aiCoreStrategyType, typeof(Action<AICoreLayer<BotLogicDecision>>));
 
             return AccessTools.Method(aiCoreStrategyType, "Update");
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(object __instance, AILogicActionResultStruct prevResult, ref AILogicActionResultStruct? __result)
+        public static bool PatchPrefix(object __instance, AICoreActionResult<BotLogicDecision, CoreActionResultParams> prevResult, ref AICoreActionResult<BotLogicDecision, CoreActionResultParams>? __result)
         {
 #if DEBUG
             try
@@ -48,8 +45,8 @@ namespace DrakiaXYZ.BigBrain.Patches
 #endif
 
                 // Get values we'll use later
-                List<AICoreLogicLayerClass> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLogicLayerClass>;
-                AICoreLogicLayerClass activeLayer = _activeLayerGetter.Invoke(__instance, null) as AICoreLogicLayerClass;
+                List<AICoreLayer<BotLogicDecision>> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLayer<BotLogicDecision>>;
+                AICoreLayer<BotLogicDecision> activeLayer = _activeLayerGetter.Invoke(__instance, null) as AICoreLayer<BotLogicDecision>;
 
                 if (activeLayerList == null)
                 {
@@ -57,7 +54,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                     return false;
                 }
 
-                foreach (AICoreLogicLayerClass layer in activeLayerList)
+                foreach (AICoreLayer<BotLogicDecision> layer in activeLayerList)
                 {
                     if (layer.ShallUseNow())
                     {
@@ -71,7 +68,7 @@ namespace DrakiaXYZ.BigBrain.Patches
 
                             activeLayer = layer;
                             _activeLayerSetter.Invoke(__instance, new object[] { layer });
-                            Action<AICoreLogicLayerClass> action = _onLayerChangedToField.GetValue(__instance) as Action<AICoreLogicLayerClass>;
+                            Action<AICoreLayer<BotLogicDecision>> action = _onLayerChangedToField.GetValue(__instance) as Action<AICoreLayer<BotLogicDecision>>;
                             if (action != null)
                             {
                                 action(activeLayer);
@@ -85,7 +82,7 @@ namespace DrakiaXYZ.BigBrain.Patches
                         }
 
                         // Call the active layer's Update() method
-                        __result = activeLayer.Update(new AILogicActionResultStruct?(prevResult));
+                        __result = activeLayer.Update(new AICoreActionResult<BotLogicDecision, CoreActionResultParams>?(prevResult));
                         return false;
                     }
                 }

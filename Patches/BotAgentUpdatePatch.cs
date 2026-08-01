@@ -5,10 +5,6 @@ using System;
 using System.Collections;
 using System.Reflection;
 
-using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
-using AILogicActionResultStruct = AICoreActionResultStruct<BotLogicDecision, GClass26>;
-using BaseNodeAbstractClass = BotNodeAbstractClass;
-
 namespace DrakiaXYZ.BigBrain.Patches
 {
     /**
@@ -18,47 +14,47 @@ namespace DrakiaXYZ.BigBrain.Patches
     {
         protected override MethodBase GetTargetMethod()
         {
-            return AccessTools.Method(typeof(AICoreLogicAgentClass), "Update");
+            return AccessTools.Method(typeof(AICoreAgent<BotLogicDecision>), "Update");
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(AICoreLogicAgentClass __instance)
+        public static bool PatchPrefix(AICoreAgent<BotLogicDecision> __instance)
         {
 #if DEBUG
             try {
 #endif
                 // Update the brain, this is instead of method_10 in the original code
-                __instance.Gclass309_0.ManualUpdate();
+                __instance._strategy.ManualUpdate();
 
                 // Call the brain update
-                AILogicActionResultStruct? result = __instance.Gclass309_0.Update(__instance.Gstruct8_0);
+                AICoreActionResult<BotLogicDecision, CoreActionResultParams>? result = __instance._strategy.Update(__instance._lastResult);
                 if (result != null)
                 {
                     // If an instance of our action doesn't exist in our dict, add it
                     BotLogicDecision action = result.Value.Action;
-                    BaseNodeAbstractClass nodeInstance;
-                    if (!__instance.Dictionary_0.TryGetValue(action, out nodeInstance))
+                    AICoreNode nodeInstance;
+                    if (!__instance._nodesDictionary.TryGetValue(action, out nodeInstance))
                     {
-                        nodeInstance = __instance.Func_0(action);
+                        nodeInstance = __instance._lazyGetter(action);
 
                         if (nodeInstance != null)
                         {
-                            __instance.Dictionary_0.Add(action, nodeInstance);
+                            __instance._nodesDictionary.Add(action, nodeInstance);
                         }
                     }
 
                     if (nodeInstance != null)
                     {
                         // If we're switching to a new action, call Start() on the new logic
-                        if (__instance.Gstruct8_0.Action != result.Value.Action && nodeInstance is CustomLogicWrapper customLogic)
+                        if (__instance._lastResult.Action != result.Value.Action && nodeInstance is CustomLogicWrapper customLogic)
                         {
                             customLogic.Start();
                         }
 
-                        nodeInstance.UpdateNodeByMain(__instance.Gstruct8_0.Data);
+                        nodeInstance.UpdateNodeByMain(__instance._lastResult.Data);
                     }
 
-                    __instance.Gstruct8_0 = result.Value;
+                    __instance._lastResult = result.Value;
                 }
 
                 return false;

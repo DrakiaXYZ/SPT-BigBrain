@@ -22,19 +22,19 @@ namespace DrakiaXYZ.BigBrain.Patches
             try
             {
                 // This should only happen if a mod calls this method more than once for some reason
-                if (BrainManager.Instance.ActivatedBots.ContainsKey(__instance.BotOwner_0.GetPlayer))
+                if (BrainManager.Instance.ActivatedBots.ContainsKey(__instance._owner.GetPlayer))
                 {
-                    throw new InvalidOperationException($"{__instance.BotOwner_0.Profile.Nickname} ({__instance.BotOwner_0.name}) has already been activated");
+                    throw new InvalidOperationException($"{__instance._owner.Profile.Nickname} ({__instance._owner.name}) has already been activated");
                 }
 
-                BrainManager.Instance.ActivatedBots.Add(__instance.BotOwner_0.GetPlayer, __instance.BotOwner_0);
-                __instance.BotOwner_0.GetPlayer.OnPlayerDeadOrUnspawn += (player) => { BrainManager.Instance.ActivatedBots.Remove(player); };
+                BrainManager.Instance.ActivatedBots.Add(__instance._owner.GetPlayer, __instance._owner);
+                __instance._owner.GetPlayer.OnPlayerDeadOrUnspawn += (player) => { BrainManager.Instance.ActivatedBots.Remove(player); };
 
-                __instance.BotOwner_0.RemoveAllExcludedLayers();
+                __instance._owner.RemoveAllExcludedLayers();
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Could not remove initially excluded layers for {__instance.BotOwner_0.Profile.Nickname} ({__instance.BotOwner_0.name})");
+                Logger.LogError($"Could not remove initially excluded layers for {__instance._owner.Profile.Nickname} ({__instance._owner.name})");
 
                 Logger.LogError(ex);
                 throw ex;

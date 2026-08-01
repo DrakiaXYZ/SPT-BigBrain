@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
-
 namespace DrakiaXYZ.BigBrain.Patches
 {
     /**
@@ -19,20 +17,20 @@ namespace DrakiaXYZ.BigBrain.Patches
 
         protected override MethodBase GetTargetMethod()
         {
-            Type baaseBrainType = typeof(BaseBrain);
-            Type aiCoreStrategyClassType = baaseBrainType.BaseType;
+            Type baseBrainType = typeof(BaseBrain);
+            Type aiCoreStrategyClassType = baseBrainType.BaseType;
 
-            _activeLayerListField = AccessTools.Field(aiCoreStrategyClassType, "List_0");
+            _activeLayerListField = AccessTools.Field(aiCoreStrategyClassType, "_activeLayers");
 
             return AccessTools.GetDeclaredMethods(aiCoreStrategyClassType).Single(x =>
             {
                 var parms = x.GetParameters();
-                return (parms.Length == 1 && parms[0].ParameterType == typeof(AICoreLogicLayerClass) && parms[0].Name == "layer");
+                return (parms.Length == 1 && parms[0].ParameterType == typeof(AICoreLayer<BotLogicDecision>) && parms[0].Name == "layer");
             });
         }
 
         [PatchPrefix]
-        public static bool PatchPrefix(object __instance, AICoreLogicLayerClass layer)
+        public static bool PatchPrefix(object __instance, AICoreLayer<BotLogicDecision> layer)
         {
 #if DEBUG
             try
@@ -45,14 +43,14 @@ namespace DrakiaXYZ.BigBrain.Patches
                     return true;
                 }
 
-                List<AICoreLogicLayerClass> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLogicLayerClass>;
+                List<AICoreLayer<BotLogicDecision>> activeLayerList = _activeLayerListField.GetValue(__instance) as List<AICoreLayer<BotLogicDecision>>;
 
                 layer.Activate();
 
                 // Look for the first layer with an equal or lower priority, and add out layer before it
                 for (int i = 0; i < activeLayerList.Count; i++)
                 {
-                    AICoreLogicLayerClass activeLayer = activeLayerList[i];
+                    AICoreLayer<BotLogicDecision> activeLayer = activeLayerList[i];
                     if (layer.Priority >= activeLayer.Priority)
                     {
                         activeLayerList.Insert(i, layer);

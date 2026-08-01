@@ -40,7 +40,7 @@ namespace DrakiaXYZ.BigBrain.Brains
             }
         }
 
-        public class ActionData : GClass26
+        public class ActionData : CoreActionResultParams
         {
 
         }

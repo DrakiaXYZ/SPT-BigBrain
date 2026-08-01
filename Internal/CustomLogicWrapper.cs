@@ -4,9 +4,7 @@ using System;
 
 namespace DrakiaXYZ.BigBrain.Internal
 {
-    using BaseNodeAbstractClass = GClass200<GClass26>;
-
-    internal class CustomLogicWrapper : BaseNodeAbstractClass
+    internal class CustomLogicWrapper : MoveNode<CoreActionResultParams>
     {
         private CustomLogic customLogic;
 
@@ -15,7 +13,7 @@ namespace DrakiaXYZ.BigBrain.Internal
             customLogic = (CustomLogic)Activator.CreateInstance(logicType, new object[] { bot });
         }
 
-        public override void UpdateNodeByBrain(GClass26 data)
+        public override void UpdateNodeByBrain(CoreActionResultParams data)
         {
             customLogic.Update((CustomLayer.ActionData)data);
         }

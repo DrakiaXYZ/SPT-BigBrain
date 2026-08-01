@@ -5,9 +5,9 @@ using System;
 
 namespace DrakiaXYZ.BigBrain
 {
-    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.4.0")]
+    [BepInPlugin("xyz.drakia.bigbrain", "DrakiaXYZ-BigBrain", "1.5.0")]
 #if !DEBUG
-    [BepInDependency("com.SPT.core", "4.0.0")]
+    [BepInDependency("com.SPT.core", "4.1.0")]
 #endif
     internal class BigBrainPlugin : BaseUnityPlugin
     {

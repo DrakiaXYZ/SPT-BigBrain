@@ -5,10 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using AICoreLogicAgentClass = AICoreAgentClass<BotLogicDecision>;
-using AICoreLogicLayerClass = AICoreLayerClass<BotLogicDecision>;
-using BaseNodeAbstractClass = BotNodeAbstractClass;
-
 namespace DrakiaXYZ.BigBrain.Brains
 {
     public class BrainManager
@@ -61,7 +57,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         public static IReadOnlyList<ExcludeLayerInfo> ExcludeLayersReadOnly => Instance.ExcludeLayers.AsReadOnly();
         public static int ExcludedLayerCount => Instance.ExcludeLayers.Count;
 
-        private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreLogicAgentClass), typeof(AICoreStrategyAbstractClass<>));
+        private static FieldInfo _strategyField = Utils.GetFieldByType(typeof(AICoreAgent<BotLogicDecision>), typeof(AICoreStrategy<>));
 
         // Hide the constructor so we can have this as a guaranteed singleton
         private BrainManager() { }
@@ -117,14 +113,14 @@ namespace DrakiaXYZ.BigBrain.Brains
         internal class ExcludedLayerInfo
         {
             public BotOwner BotOwner { get; private set; }
-            public AICoreLogicLayerClass Layer { get; private set; }
+            public AICoreLayer<BotLogicDecision> Layer { get; private set; }
             public string BrainName { get; private set; }
             public string LayerName { get; private set; }
             public int Index { get; private set; }
 
             public WildSpawnType Role => BotOwner.Profile.Info.Settings.Role;
 
-            public ExcludedLayerInfo(BotOwner botOwner, AICoreLogicLayerClass layer, string brainName, int index)
+            public ExcludedLayerInfo(BotOwner botOwner, AICoreLayer<BotLogicDecision> layer, string brainName, int index)
             {
                 BotOwner = botOwner;
                 Layer = layer;
@@ -263,7 +259,7 @@ namespace DrakiaXYZ.BigBrain.Brains
         }
 
         /**
-         * Return the currently active base layer, which will extend "AICoreLayerClass", or the active
+         * Return the currently active base layer, which will extend "AICoreLayer", or the active
          * CustomLayer if a custom layer is enabled
          **/
         public static object GetActiveLayer(BotOwner botOwner)
@@ -279,7 +275,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                 return null;
             }
 
-            AICoreLogicLayerClass activeLayer = botBrainStrategy.CurLayerInfo;
+            AICoreLayer<BotLogicDecision> activeLayer = botBrainStrategy.CurLayerInfo;
             if (activeLayer is CustomLayerWrapper customLayerWrapper)
             {
                 return customLayerWrapper.CustomLayer();
@@ -300,7 +296,7 @@ namespace DrakiaXYZ.BigBrain.Brains
                 return null;
             }
 
-            BaseNodeAbstractClass activeLogic = CustomLayerWrapper.GetLogicInstance(botOwner);
+            AICoreNode activeLogic = CustomLayerWrapper.GetLogicInstance(botOwner);
             if (activeLogic is CustomLogicWrapper customLogicWrapper)
             {
                 return customLogicWrapper.CustomLogic();
